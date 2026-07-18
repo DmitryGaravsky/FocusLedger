@@ -171,6 +171,8 @@ A bounded `Channel<ActivitySignal>` serializes all externally observed changes. 
 
 Queue saturation must create a safe diagnostic and coalesce low-priority updates rather than block the Windows callback thread indefinitely.
 
+The coordinator keeps a bounded collection of pending coalescible signals. Each concrete signal may define semantic equivalence that excludes observation timestamps; the default is record equality. An equivalent signal is suppressed until the accepted instance finishes processing. A unique coalescible signal that cannot enter the full queue is rejected through the non-blocking sink result and increments a privacy-safe numeric counter. Non-droppable producers use the cancellable asynchronous sink path and wait for capacity. A coalescing comparison must not create or retain a separate raw-title, URL, or path key.
+
 ### 5.3 Coordinator
 
 One consumer owns mutable runtime state. No collector may directly edit the state model or append persisted events. The coordinator:
@@ -181,6 +183,8 @@ One consumer owns mutable runtime state. No collector may directly edit the stat
 4. applies privacy policy;
 5. assigns sequence numbers;
 6. forwards events to the writer.
+
+The consumer loop can start only once. Completion closes producer admission and drains accepted signals in order. Coordinator metrics expose only capacity, queue depth, and aggregate processed, coalesced, and rejected counts.
 
 ### 5.4 Event writer
 

@@ -53,7 +53,7 @@ FocusLedger can run for a full day, correctly record foreground/presence/session
 |---|---|---|---|---|
 | CORE-001 | Implement tracker lifecycle state machine | Complete | FND-003 | Starting, Running, Paused, Stopping, Stopped, and Faulted transitions are deterministic and unit-tested. |
 | CORE-002 | Implement presence state machine | Complete | FND-003 | Active, Idle, Locked, Disconnected, Suspended, and Unknown precedence is unit-tested. |
-| CORE-003 | Implement serialized signal coordinator | Planned | CORE-001, CORE-002 | One bounded channel and one consumer own runtime state; duplicate/coalescible signals do not create duplicate events. |
+| CORE-003 | Implement serialized signal coordinator | Complete | CORE-001, CORE-002 | One bounded channel and one consumer own runtime state; duplicate/coalescible signals do not create duplicate events. |
 | WIN-001 | Create hidden message-loop host | Planned | FND-001 | WinExe starts without console/main window and processes Windows messages until clean shutdown. |
 | WIN-002 | Foreground WinEvent collector | Planned | WIN-001, CORE-003 | Foreground changes and selected title changes become signals; callbacks remain non-blocking. |
 | WIN-003 | Foreground reconciliation sampler | Planned | WIN-002 | Missed hook events are corrected within the configured interval without duplicate event output. |
