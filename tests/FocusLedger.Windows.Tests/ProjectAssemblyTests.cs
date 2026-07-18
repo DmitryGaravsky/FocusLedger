@@ -2,7 +2,7 @@
 
 public sealed class ProjectAssemblyTests {
     [Test]
-    public void WindowsAssembly_HasExpectedIdentity() {
+    public void WindowsAssemblyHasExpectedIdentity() {
         Assert.That(typeof(WindowsAssemblyMarker).Assembly.GetName().Name, Is.EqualTo("FocusLedger.Windows"));
     }
 }

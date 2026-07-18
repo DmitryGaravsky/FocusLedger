@@ -4,7 +4,26 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <Product>FocusLedger</Product>
+    <Title>FocusLedger</Title>
+    <Description>A privacy-first local activity tracker for Windows.</Description>
+    <Company>Dmitrii Garavskii</Company>
+    <Authors>Dmitrii Garavskii</Authors>
+    <Copyright>Copyright © 2026 Dmitrii Garavskii</Copyright>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/DmitryGaravsky/FocusLedger</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/DmitryGaravsky/FocusLedger</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>windows;activity-tracking;privacy;dotnet</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 </Project>

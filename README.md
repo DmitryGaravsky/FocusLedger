@@ -48,3 +48,5 @@ The primary specification documents are:
 ## License
 
 The project is planned for release under the MIT License. Third-party dependencies must be compatible with MIT distribution and documented in release artifacts.
+
+FocusLedger is created and maintained by [Dmitrii Garavskii](https://github.com/DmitryGaravsky).

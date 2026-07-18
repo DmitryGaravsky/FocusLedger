@@ -2,7 +2,7 @@
 
 public sealed class ProjectAssemblyTests {
     [Test]
-    public void ReportingAssembly_HasExpectedIdentity() {
+    public void ReportingAssemblyHasExpectedIdentity() {
         Assert.That(typeof(ReportingAssemblyMarker).Assembly.GetName().Name, Is.EqualTo("FocusLedger.Reporting"));
     }
 }

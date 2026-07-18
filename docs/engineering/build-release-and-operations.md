@@ -28,6 +28,19 @@ Primary project settings:
 
 Trimming and ReadyToRun remain disabled for the initial release until Windows Forms, COM, P/Invoke, source-generated serialization, and startup-size behavior are measured and tested.
 
+Shared build policy is defined in the repository-level `Directory.Build.props`. Every project inherits:
+
+- nullable reference types and implicit usings;
+- warnings as errors;
+- .NET analyzers at the latest recommended analysis level;
+- build-time code-style enforcement;
+- deterministic build settings;
+- product, company, repository, license, language, and semantic-version metadata.
+
+The initial shared version is `0.1.0`. Package versions are defined only in `Directory.Packages.props` through Central Package Management.
+
+Project and package attribution use the public GitHub identity [Dmitrii Garavskii](https://github.com/DmitryGaravsky). No email address or employer is inferred when the corresponding profile field is not public.
+
 ## 2. Artifact model
 
 The user-facing release contains one executable for `win-x64`. Documentation must state that the self-contained runtime may extract native components to `%TEMP%\.net` during execution.

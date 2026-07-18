@@ -2,7 +2,7 @@
 
 public sealed class ArchitectureBoundaryTests {
     [Test]
-    public void CoreAssembly_DoesNotReferenceWindowsDesktopAssemblies() {
+    public void CoreAssemblyDoesNotReferenceWindowsDesktopAssemblies() {
         string[] referencedAssemblies = typeof(CoreAssemblyMarker).Assembly
             .GetReferencedAssemblies()
             .Select(static assembly => assembly.Name ?? string.Empty)
