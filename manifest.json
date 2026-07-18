@@ -56,8 +56,8 @@
   },
   {
     "path": "docs/engineering/build-release-and-operations.md",
-    "bytes": 6144,
-    "sha256": "6c4a9a4b37c17cd84de7698f12a629fdad944bbc13313d19bf14bbc199919007"
+    "bytes": 6932,
+    "sha256": "6844d16515b2818e1c5d5f5675de8b3e53cc13b797e9ba8326f6613a28b0f689"
   },
   {
     "path": "docs/engineering/testing-and-quality.md",
@@ -96,8 +96,8 @@
   },
   {
     "path": "docs/roadmap.md",
-    "bytes": 18328,
-    "sha256": "1d78089946448301f563d35faa0e0b8dd64a8e6cefa51eb1999902f8e6aeb811"
+    "bytes": 18418,
+    "sha256": "c70f81953fec117fd2ad17ee71aeb5402362a109cd366165510673dbd88432f1"
   },
   {
     "path": "README.md",

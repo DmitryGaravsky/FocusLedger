@@ -71,16 +71,19 @@ Recommended branches and automation:
 
 Pull-request CI:
 
-1. restore with locked dependencies when lock files are introduced;
-2. build Release;
-3. run unit tests;
-4. run reporting golden tests;
-5. run privacy canary tests;
-6. run static analyzers and formatting check;
-7. build `win-x64` single-file artifact;
-8. smoke-test artifact startup/CLI on a Windows runner where feasible;
-9. generate SBOM;
-10. upload test and build artifacts.
+1. run on the pinned `windows-2025` GitHub-hosted image with .NET 10;
+2. verify repository CRLF, whitespace, comment, visibility, NUnit, and Central Package Management policy;
+3. restore dependencies and verify `dotnet format` has no pending changes;
+4. build the complete solution in Release with analyzers and warnings as errors;
+5. run NUnit tests and produce TRX results;
+6. remove runner identity and local path attributes from TRX before artifact upload;
+7. upload sanitized test results with seven-day retention.
+
+Official GitHub-maintained actions are pinned to reviewed commit SHAs. Workflow permissions are read-only, duplicate runs for the same ref are cancelled, and test-result upload is blocked if privacy sanitization fails.
+
+PR and push CI never publishes, uploads, or executes the application EXE. Single-file publication, clean-machine smoke testing, checksums, SBOM generation, and executable upload belong only to the explicit tag-driven release workflow introduced by `REL-004` and `REL-005`.
+
+Reporting golden tests, extended privacy canaries, and additional release gates are added as their corresponding roadmap features become available.
 
 Scheduled CI:
 
