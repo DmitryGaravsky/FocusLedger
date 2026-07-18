@@ -59,6 +59,8 @@ Unknown
 
 A higher-precedence state suppresses lower-precedence attribution. For example, a locked workstation is not additionally reported as idle even if no input occurs.
 
+The Core state machine accepts complete immutable condition snapshots containing the resolved input-activity condition and current lock, disconnect, and suspend flags. Reapplying an equivalent snapshot is idempotent. Clearing a higher-precedence flag restores the lower condition supplied by the same reconciliation snapshot.
+
 ### 3.1 Active to Idle
 
 Transition when monotonic elapsed time since the last observed user input reaches the configured threshold, default 5 minutes. The logical idle interval begins at `lastInputTime + threshold`, not at the later sampling moment.
