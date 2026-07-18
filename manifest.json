@@ -1,8 +1,8 @@
 [
   {
     "path": "AGENTS.md",
-    "bytes": 6901,
-    "sha256": "bd98aa82a8651a93eff74e68a2df5124f64a05fcc933b0c92ad597bad0cd5c15"
+    "bytes": 7116,
+    "sha256": "477e57d15e4c2d659a91ea443dfca811cbf141f7aaa8dd477ff9636801a9038c"
   },
   {
     "path": "docs/adr/0001-single-process-tray-agent.md",
@@ -31,8 +31,8 @@
   },
   {
     "path": "docs/architecture/overview.md",
-    "bytes": 7785,
-    "sha256": "10564ed30eda1bd800be37a4c8cb76fa0dcc4c4c117518e43ed752dcf50ec41d"
+    "bytes": 8404,
+    "sha256": "b051a8ec3c60ab31d58ec2bb6e4403b9e564c38971f9aca19843af4fdc7b8987"
   },
   {
     "path": "docs/architecture/runtime-state-machine.md",
@@ -61,8 +61,8 @@
   },
   {
     "path": "docs/engineering/testing-and-quality.md",
-    "bytes": 5852,
-    "sha256": "ecbb4ab9953f7e510c8350e38cba2af883cebf9b98371fd2a21530421ae0207a"
+    "bytes": 5970,
+    "sha256": "35382e64ae62b6f179e5c3b6c0047ee4c40451d2dfa5aa77ba978121c1f9c642"
   },
   {
     "path": "docs/features/activity-classification.md",
@@ -96,8 +96,8 @@
   },
   {
     "path": "docs/roadmap.md",
-    "bytes": 18327,
-    "sha256": "36353352a12dcaa877aba51e0ef6dfa6cc1c255a810a96f26ceec7b4925e8fa4"
+    "bytes": 18328,
+    "sha256": "1d78089946448301f563d35faa0e0b8dd64a8e6cefa51eb1999902f8e6aeb811"
   },
   {
     "path": "README.md",

@@ -108,6 +108,15 @@ Responsibilities:
 
 It has no Windows-specific references.
 
+The initial Core contract surface includes:
+
+- immutable `ActivitySignal`, `SignalDelivery`, `EventEnvelope`, and `ActivityEvent` domain contracts;
+- cancellable signal-source, signal-sink, and single-writer interfaces with asynchronous disposal;
+- `IMonotonicClock` for elapsed-time measurements, while wall-clock consumers use `TimeProvider` directly;
+- immutable application identity and classification result contracts;
+- a transient classification request whose raw window title is excluded from JSON serialization and redacted from string rendering;
+- covariant immutable configuration-snapshot access.
+
 ### 4.3 `FocusLedger.Windows`
 
 Responsibilities:

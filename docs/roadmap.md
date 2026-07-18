@@ -38,7 +38,7 @@
 |---|---|---|---|---|
 | FND-001 | Create .NET 10 solution and project structure | Complete | none | Four source projects and three test projects build in Release with nullable and warnings-as-errors enabled. |
 | FND-002 | Establish shared build configuration | Complete | FND-001 | Common properties, analyzers, deterministic builds, and version metadata are applied consistently. |
-| FND-003 | Define core abstractions | Planned | FND-001 | Signal, event, clock, configuration, writer, classifier, and platform-source contracts compile without Windows dependencies in Core. |
+| FND-003 | Define core abstractions | Complete | FND-001 | Signal, event, clock, configuration, writer, classifier, and platform-source contracts compile without Windows dependencies in Core. |
 | FND-004 | Add GitHub Actions pull-request CI | Planned | FND-001 | Windows CI restores, builds, tests, publishes a smoke artifact, and uploads results. |
 | FND-005 | Add repository governance | Planned | FND-004 | README, AGENTS, contribution guidance, security policy, issue templates, and MIT license are present. |
 | FND-006 | Freeze schema-1 naming baseline | Planned | FND-003 | Event and configuration names are reviewed against docs; compatibility fixtures are created. |

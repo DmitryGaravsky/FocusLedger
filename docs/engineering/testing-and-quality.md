@@ -168,6 +168,7 @@ Recommended gates:
 - analyzers enabled;
 - NUnit analyzer diagnostics enabled for every test project;
 - no project-level NuGet package versions outside `Directory.Packages.props`;
+- no blank lines between methods or inside method bodies; explanatory line comments mark necessary logical sections;
 - `dotnet format FocusLedger.slnx` runs after the final code edit;
 - `dotnet format FocusLedger.slnx --verify-no-changes` passes before handoff;
 - changed text files use CRLF line endings;

@@ -10,7 +10,7 @@ public sealed class BuildMetadataTests {
         AssemblyCompanyAttribute? company = assembly.GetCustomAttribute<AssemblyCompanyAttribute>();
         AssemblyCopyrightAttribute? copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>();
         AssemblyInformationalVersionAttribute? informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-
+        // Verify the shared build metadata as one coherent attribution contract.
         Assert.Multiple(() => {
             Assert.That(product?.Product, Is.EqualTo("FocusLedger"));
             Assert.That(company?.Company, Is.EqualTo("Dmitrii Garavskii"));

@@ -76,6 +76,7 @@ For every roadmap feature:
 - Use the most restrictive effective visibility. Omit the `private` modifier wherever `private` is the C# default, and widen visibility only when required by a caller, framework, or documented extension boundary.
 - Do not use expression-bodied implementations for properties, property accessors, or methods.
 - Do not use block comments (`/* ... */`) or documentation comments (`///`). Use ordinary line comments only when a comment is necessary.
+- Do not leave blank lines between method declarations or inside method bodies. When a method needs logical sections, separate them with an ordinary line comment that explains the purpose of the following section.
 - Prefer immutable records for persisted events, configuration snapshots, and state-machine inputs.
 - Use `System.Text.Json` source generation for event and configuration serialization when practical.
 - Do not use reflection-based plugin loading in the first stable release.
