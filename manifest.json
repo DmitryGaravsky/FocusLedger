@@ -6,8 +6,8 @@
   },
   {
     "path": "AGENTS.md",
-    "bytes": 7116,
-    "sha256": "477e57d15e4c2d659a91ea443dfca811cbf141f7aaa8dd477ff9636801a9038c"
+    "bytes": 7315,
+    "sha256": "8d9b1db3b55490e56560aefa28af839100b3929a2c63f2a1b8f71664491c5d7c"
   },
   {
     "path": "CONTRIBUTING.md",
@@ -46,8 +46,8 @@
   },
   {
     "path": "docs/architecture/runtime-state-machine.md",
-    "bytes": 5632,
-    "sha256": "98b4a703785c410dbd67d9393499a21d6648b123526109f4aa20a48e0d0eaa69"
+    "bytes": 6227,
+    "sha256": "5ec38f435ea295380a4cccfaa28fb897b27c4bfa77fd29673881b77cb23db534"
   },
   {
     "path": "docs/architecture/windows-platform-integration.md",
@@ -106,8 +106,8 @@
   },
   {
     "path": "docs/roadmap.md",
-    "bytes": 18417,
-    "sha256": "3af7acbc8c7afcc67318e5dcbc57d58eeab2cb8f6831aaa4cbf84ca024a5c510"
+    "bytes": 18418,
+    "sha256": "f3cf438f02610a9976e9115ad4611592ac1ceb2afb617ad16c23a60e5b3de43d"
   },
   {
     "path": "README.md",

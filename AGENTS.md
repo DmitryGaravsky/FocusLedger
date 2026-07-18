@@ -75,6 +75,7 @@ For every roadmap feature:
 - Manage all NuGet package versions centrally through `Directory.Packages.props`; project files must not declare package versions.
 - Use the most restrictive effective visibility. Omit the `private` modifier wherever `private` is the C# default, and widen visibility only when required by a caller, framework, or documented extension boundary.
 - Do not use expression-bodied implementations for properties, property accessors, or methods.
+- Keep a short property accessor on one line when its implementation is a single simple statement, for example `get { return value; }`, instead of expanding the accessor body across multiple lines.
 - Do not use block comments (`/* ... */`) or documentation comments (`///`). Use ordinary line comments only when a comment is necessary.
 - Do not leave blank lines between method declarations or inside method bodies. When a method needs logical sections, separate them with an ordinary line comment that explains the purpose of the following section.
 - Prefer immutable records for persisted events, configuration snapshots, and state-machine inputs.

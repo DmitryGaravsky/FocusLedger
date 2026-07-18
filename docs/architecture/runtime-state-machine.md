@@ -9,13 +9,11 @@ FocusLedger represents runtime behavior through orthogonal state machines. This 
 ## 2. Tracker lifecycle state
 
 ```text
-Starting -> Running -> Stopping -> Stopped
-              |           ^
-              v           |
-            Paused -------+
-              |
-              v
-            Faulted
+Starting -> Running <-> Paused
+    |          |          |
+    +----------+----------+-> Stopping -> Stopped
+               |               |
+               +-------> Faulted <------+
 ```
 
 States:
@@ -29,9 +27,13 @@ States:
 
 Rules:
 
+- Startup completes in `Running` or restores the persisted manual-pause choice by entering `Paused`.
+- Shutdown may begin during `Starting`, `Running`, or `Paused`; this permits deterministic cancellation of incomplete initialization.
 - Pause state persists across restart.
 - `Paused` does not imply workstation idle or locked; presence continues to be observed for operational correctness but is not attributed as tracked application time.
-- A fatal writer failure transitions to `Faulted`.
+- A fatal writer or coordinator failure during any non-terminal lifecycle phase transitions to terminal `Faulted`.
+- Repeating the command that established `Running`, `Paused`, `Stopping`, or `Faulted` is idempotent. Other invalid transitions are rejected without changing state.
+- `Stopped` and `Faulted` are terminal states. Resource cleanup after a fault does not change the recorded lifecycle state.
 
 ## 3. Presence state
 
