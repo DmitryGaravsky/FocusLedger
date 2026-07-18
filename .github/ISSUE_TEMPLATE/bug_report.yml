@@ -1,0 +1,79 @@
+name: Bug report
+description: Report a reproducible defect without including personal activity data
+title: "[Bug]: "
+labels:
+  - kind:bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a problem. Do not attach raw activity files, window titles, URLs, local paths, usernames, machine names, email addresses, credentials, or unsanitized logs. Report security or privacy vulnerabilities through the private process in SECURITY.md.
+  - type: input
+    id: roadmap
+    attributes:
+      label: Roadmap feature ID
+      description: Provide the related feature ID when known, for example CORE-001.
+      placeholder: CORE-001
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Identify the affected release or commit.
+    validations:
+      required: true
+  - type: dropdown
+    id: windows
+    attributes:
+      label: Windows version
+      options:
+        - Windows 10 22H2
+        - Windows 11
+        - Other or unknown
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the defect using synthetic, privacy-safe values.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Provide the smallest deterministic sequence that demonstrates the problem.
+      placeholder: |
+        1. Start FocusLedger...
+        2. Perform a privacy-safe synthetic action...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics
+      description: Include only fixed error codes or synthetic output that you have reviewed for personal data.
+      render: text
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Privacy confirmation
+      options:
+        - label: I reviewed this report and its attachments and removed personal, credential, title, URL, path, username, and machine data.
+          required: true
+        - label: This is not a security vulnerability or suspected privacy leak.
+          required: true
+

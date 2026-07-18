@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "sequence": 182,
+  "eventId": "019bb9c0-55ad-7368-b67c-290b2163c544",
+  "timestampUtc": "2026-07-18T08:14:32.421Z",
+  "utcOffsetMinutes": 120,
+  "type": "foreground.changed",
+  "source": "win-event-hook",
+  "correlationId": "019bb9c0-55ad-7368-b67c-290b2163c545",
+  "presence": "active",
+  "app": {
+    "id": "visual-studio",
+    "processName": "devenv.exe",
+    "family": "development-environment"
+  },
+  "context": {
+    "label": "source-code",
+    "privacy": "normalized"
+  },
+  "classification": {
+    "category": "work.development",
+    "disposition": "productive",
+    "weight": 1.0,
+    "ruleId": "builtin.visual-studio.source-code",
+    "confidence": 0.95
+  }
+}

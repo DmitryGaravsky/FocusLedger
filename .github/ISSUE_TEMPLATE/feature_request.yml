@@ -1,0 +1,51 @@
+name: Feature request
+description: Propose a scoped improvement consistent with the product and privacy model
+title: "[Feature]: "
+labels:
+  - kind:feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the roadmap and deferred backlog before proposing a feature. FocusLedger must remain local-only, privacy-first, and useful without administrator rights.
+  - type: input
+    id: roadmap
+    attributes:
+      label: Roadmap feature ID
+      description: Provide the related feature ID when one exists.
+      placeholder: CFG-001
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Explain the user problem without including real activity or personal data.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe observable behavior and acceptance criteria, not only an implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Privacy and security impact
+      description: Identify transient and persisted data, permissions, failure behavior, and any network implications.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Scope confirmation
+      options:
+        - label: I checked the roadmap, deferred backlog, and existing issues.
+          required: true
+        - label: The proposal does not require telemetry, cloud services, screenshots, input capture, or collection from another user's session.
+          required: true
+

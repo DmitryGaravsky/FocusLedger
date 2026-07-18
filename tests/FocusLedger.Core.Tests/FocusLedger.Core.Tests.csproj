@@ -20,4 +20,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\FocusLedger.Core\FocusLedger.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Fixtures\Compatibility\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

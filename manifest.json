@@ -1,8 +1,18 @@
 [
   {
+    "path": ".github/pull_request_template.md",
+    "bytes": 1148,
+    "sha256": "4900cebd6cae7d6f1115dbc19920d8d19e0ca15f3fd9627241cbec4e59ae68fa"
+  },
+  {
     "path": "AGENTS.md",
     "bytes": 7116,
     "sha256": "477e57d15e4c2d659a91ea443dfca811cbf141f7aaa8dd477ff9636801a9038c"
+  },
+  {
+    "path": "CONTRIBUTING.md",
+    "bytes": 3444,
+    "sha256": "ee5944d25021f5f9fd6937b0889c748bc7f35ef9907295ac8a4ba3f732c7baa3"
   },
   {
     "path": "docs/adr/0001-single-process-tray-agent.md",
@@ -46,13 +56,13 @@
   },
   {
     "path": "docs/data/configuration.md",
-    "bytes": 11863,
-    "sha256": "cef4f0d076fe6e62d562e410b8297cd60d55446c2ebf950b388608304ff040a6"
+    "bytes": 12504,
+    "sha256": "3b6b35df0851f2c27bc23ac5164f14d57959b14b6cbc95e58586f5f7264a3c76"
   },
   {
     "path": "docs/data/event-model.md",
-    "bytes": 8215,
-    "sha256": "ea3cb118d11c176f7f1fa8c2593ee7755ea233defb43ebab1888506d8d10fc98"
+    "bytes": 8762,
+    "sha256": "1841de8a939d32327d34084b428d3950dfcb9e500ea62be6b17a05becb75390d"
   },
   {
     "path": "docs/engineering/build-release-and-operations.md",
@@ -96,12 +106,17 @@
   },
   {
     "path": "docs/roadmap.md",
-    "bytes": 18418,
-    "sha256": "c70f81953fec117fd2ad17ee71aeb5402362a109cd366165510673dbd88432f1"
+    "bytes": 18417,
+    "sha256": "3af7acbc8c7afcc67318e5dcbc57d58eeab2cb8f6831aaa4cbf84ca024a5c510"
   },
   {
     "path": "README.md",
-    "bytes": 3218,
-    "sha256": "0799a9db39e7770578feb2387bc4d5907759cd7f48dfe6704c04a3c4895bdb8d"
+    "bytes": 3607,
+    "sha256": "33be82a73aa7bd6fe72f3dc70a97d708c3b49e5106c80baec1842df3ac47ce67"
+  },
+  {
+    "path": "SECURITY.md",
+    "bytes": 1883,
+    "sha256": "217f55dcea6e84ccbdc8a6889c36b4bb151321e28f51820d6bbdca374eae8e0b"
   }
 ]

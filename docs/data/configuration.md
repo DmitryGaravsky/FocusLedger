@@ -1,6 +1,6 @@
 # Configuration Specification
 
-**Status:** Normative draft
+**Status:** Normative schema version 1 baseline
 **Path:** `%LocalAppData%\FocusLedger\config.json`
 
 ## 1. Principles
@@ -202,3 +202,9 @@ When FocusLedger writes configuration or migration output:
 ## 7. Migration
 
 Configuration schema changes require explicit migrations. The application must never silently discard unknown user rules. Before modifying a user file, create a backup and record the old/new schema versions in a safe diagnostic event.
+
+## 8. Naming baseline fixture
+
+`tests/FocusLedger.Core.Tests/Fixtures/Compatibility/schema-1-configuration-names.json` freezes the schema 1 section and property names. It is a compact naming fixture rather than the complete built-in default configuration. The complete default remains normative in section 3 and will be covered by serialization fixtures when `CFG-001` is implemented.
+
+Renaming or removing a schema 1 property requires a schema-version increment and documented migration. Backward-compatible optional additions do not require a version increment, but readers must continue to accept this fixture.

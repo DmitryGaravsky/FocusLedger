@@ -1,6 +1,6 @@
 # Event Model and JSONL Contract
 
-**Status:** Normative draft for schema version 1
+**Status:** Normative schema version 1 baseline
 
 ## 1. Storage layout
 
@@ -231,3 +231,12 @@ Schema 1 readers:
 - expose unsupported schema versions as data-quality errors rather than silently misinterpreting them.
 
 Additive optional fields do not require a schema increment. Renaming/removing fields or changing semantics does.
+
+## 12. Naming baseline fixtures
+
+Schema 1 property names and event type spellings are frozen by:
+
+- `tests/FocusLedger.Core.Tests/Fixtures/Compatibility/schema-1-foreground-event.json`;
+- `tests/FocusLedger.Core.Tests/Fixtures/Compatibility/schema-1-event-types.json`.
+
+The fixtures mirror this normative document and are compatibility inputs, not generated snapshots. A rename, removal, or semantic change requires the compatibility process above. Additive optional fields may extend future fixtures without removing the schema 1 names.

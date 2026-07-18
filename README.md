@@ -41,6 +41,12 @@ The primary specification documents are:
 - [`docs/data/configuration.md`](docs/data/configuration.md)
 - [`docs/roadmap.md`](docs/roadmap.md)
 
+## Contributing and security
+
+Contributions are welcome when they preserve the documented privacy, compatibility, and local-only constraints. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for the development and pull-request workflow.
+
+Report suspected vulnerabilities and privacy leaks through the private process described in [`SECURITY.md`](SECURITY.md), not through a public issue.
+
 ## Product identity
 
 `FocusLedger` is the repository, executable, product, data-directory, and namespace prefix. Any future rename must be handled as an explicit migration because it affects autostart registration, named mutexes, named pipes, configuration locations, and report metadata.

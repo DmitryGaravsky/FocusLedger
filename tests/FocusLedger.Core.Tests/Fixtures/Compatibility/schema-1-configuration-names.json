@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "tracking": {
+    "idleThresholdSeconds": 300,
+    "foregroundReconciliationIntervalMilliseconds": 1000,
+    "idleSamplingIntervalMilliseconds": 1000,
+    "eventFlushIntervalMilliseconds": 2000,
+    "heartbeatIntervalSeconds": 60,
+    "persistManualPause": true,
+    "workingSchedule": {
+      "enabled": false,
+      "timeZone": "Europe/Madrid",
+      "days": ["monday"],
+      "start": "09:00",
+      "end": "18:00"
+    }
+  },
+  "privacy": {
+    "mode": "balanced",
+    "persistRawWindowTitles": false,
+    "persistUrls": false,
+    "persistExecutablePaths": false,
+    "persistMeetingTitles": false,
+    "maximumSafeContextLength": 64,
+    "rejectEmailAddresses": true,
+    "rejectWindowsPaths": true,
+    "rejectUrls": true,
+    "rejectIpAddresses": true,
+    "rejectLongNumericIdentifiers": true
+  },
+  "storage": {
+    "rootDirectory": "%LocalAppData%\\FocusLedger",
+    "activityRetentionDays": 365,
+    "reportRetentionDays": 0,
+    "createYearMonthDirectories": true,
+    "allowConcurrentReportReads": true
+  },
+  "reporting": {
+    "openAfterInteractiveGeneration": true,
+    "includeTimeline": true,
+    "includeApplications": true,
+    "includeSafeContexts": true,
+    "includeFocusMetrics": true,
+    "includeMeetingMetrics": true,
+    "includeLostTimeMetrics": true,
+    "includeDataQuality": true,
+    "minimumDisplayedIntervalSeconds": 5,
+    "focusSessionMinimumSeconds": 600,
+    "focusSessionMaximumNeutralGapSeconds": 60
+  },
+  "startup": {
+    "enableAutomatically": false,
+    "registryValueName": "FocusLedger",
+    "arguments": "--autostart"
+  },
+  "categories": [
+    {
+      "id": "work.development",
+      "displayName": "Development",
+      "disposition": "productive",
+      "weight": 1.0
+    }
+  ],
+  "applications": [
+    {
+      "id": "visual-studio",
+      "processNames": ["devenv.exe"],
+      "family": "development-environment",
+      "defaultCategory": "work.development",
+      "titleParser": "ide-window"
+    }
+  ],
+  "titleParsers": [
+    {
+      "id": "ide-window",
+      "type": "known-window-suffix",
+      "suffixes": [" - Microsoft Visual Studio"],
+      "emitSafeLabelsOnly": true
+    }
+  ],
+  "classificationRules": [
+    {
+      "id": "builtin.development-environment",
+      "priority": 100,
+      "enabled": true,
+      "applicationFamilies": ["development-environment"],
+      "titlePattern": "(?i)source",
+      "category": "work.development",
+      "safeContext": "source-code"
+    }
+  ],
+  "meetingDetectors": [
+    {
+      "id": "google-meet",
+      "enabled": true,
+      "provider": "google-meet",
+      "processNames": ["chrome.exe"],
+      "requiredSafeContext": "web-meeting",
+      "startConfidence": 0.8,
+      "continueConfidence": 0.6,
+      "startDebounceSeconds": 10,
+      "endDebounceSeconds": 15,
+      "useAudioEvidence": true,
+      "persistTitle": false
+    }
+  ],
+  "diagnostics": {
+    "enabled": true,
+    "minimumLevel": "information",
+    "retentionDays": 14,
+    "includeStackTraces": true,
+    "includeRawWindowTitles": false,
+    "includeExecutablePaths": false,
+    "includeConfigurationContent": false
+  }
+}
