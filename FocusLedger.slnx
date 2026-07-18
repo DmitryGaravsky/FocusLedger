@@ -1,0 +1,18 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/FocusLedger.App/FocusLedger.App.csproj" />
+    <Project Path="src/FocusLedger.Core/FocusLedger.Core.csproj" />
+    <Project Path="src/FocusLedger.Reporting/FocusLedger.Reporting.csproj" />
+    <Project Path="src/FocusLedger.Windows/FocusLedger.Windows.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FocusLedger.Core.Tests/FocusLedger.Core.Tests.csproj" />
+    <Project Path="tests/FocusLedger.Reporting.Tests/FocusLedger.Reporting.Tests.csproj" />
+    <Project Path="tests/FocusLedger.Windows.Tests/FocusLedger.Windows.Tests.csproj" />
+  </Folder>
+</Solution>

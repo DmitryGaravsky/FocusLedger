@@ -1,0 +1,107 @@
+[
+  {
+    "path": "AGENTS.md",
+    "bytes": 6901,
+    "sha256": "bd98aa82a8651a93eff74e68a2df5124f64a05fcc933b0c92ad597bad0cd5c15"
+  },
+  {
+    "path": "docs/adr/0001-single-process-tray-agent.md",
+    "bytes": 1501,
+    "sha256": "2b8ce6462fa6d8238a50ae21e791af93e799c22f1f70521e0e6c7b221db3ce0a"
+  },
+  {
+    "path": "docs/adr/0002-event-sourced-jsonl-storage.md",
+    "bytes": 1368,
+    "sha256": "d1547e5aeab61af08fd761b50a990d43778503160141170afe6bafbb28b355a3"
+  },
+  {
+    "path": "docs/adr/0003-balanced-privacy.md",
+    "bytes": 1526,
+    "sha256": "c1296db8ac75ac8d8eff58a0df9cf03cc87529021c7d9fd8df526dd052ead69e"
+  },
+  {
+    "path": "docs/adr/0004-rule-based-classification.md",
+    "bytes": 1236,
+    "sha256": "c18b97ab1d3398f21c367409b3adcae3b0879955f74b933820351caca7f093c0"
+  },
+  {
+    "path": "docs/adr/0005-single-file-self-contained-deployment.md",
+    "bytes": 1342,
+    "sha256": "2d40e66ebdb791ec5a7f83887679adb0afed7eb26156b02e1e6611962078d087"
+  },
+  {
+    "path": "docs/architecture/overview.md",
+    "bytes": 7785,
+    "sha256": "10564ed30eda1bd800be37a4c8cb76fa0dcc4c4c117518e43ed752dcf50ec41d"
+  },
+  {
+    "path": "docs/architecture/runtime-state-machine.md",
+    "bytes": 5632,
+    "sha256": "98b4a703785c410dbd67d9393499a21d6648b123526109f4aa20a48e0d0eaa69"
+  },
+  {
+    "path": "docs/architecture/windows-platform-integration.md",
+    "bytes": 6687,
+    "sha256": "5f84857c33dbd3251c3d1e237687b1154ea81f6070653dae9f219e87f49d7cfe"
+  },
+  {
+    "path": "docs/data/configuration.md",
+    "bytes": 11863,
+    "sha256": "cef4f0d076fe6e62d562e410b8297cd60d55446c2ebf950b388608304ff040a6"
+  },
+  {
+    "path": "docs/data/event-model.md",
+    "bytes": 8215,
+    "sha256": "ea3cb118d11c176f7f1fa8c2593ee7755ea233defb43ebab1888506d8d10fc98"
+  },
+  {
+    "path": "docs/engineering/build-release-and-operations.md",
+    "bytes": 5392,
+    "sha256": "1c34e56f1675fd8224923214e26a522d960435e71127d80520e813ad1361e8eb"
+  },
+  {
+    "path": "docs/engineering/testing-and-quality.md",
+    "bytes": 5852,
+    "sha256": "ecbb4ab9953f7e510c8350e38cba2af883cebf9b98371fd2a21530421ae0207a"
+  },
+  {
+    "path": "docs/features/activity-classification.md",
+    "bytes": 5433,
+    "sha256": "6a59abb4d7664e7f90588f796f3675904596f048ca25ba7e71ff6d52b9cee46d"
+  },
+  {
+    "path": "docs/features/meeting-detection.md",
+    "bytes": 5183,
+    "sha256": "80e63c931ec617d0cee9fbd803ef1209f1363d597ba18e5a5aafab4ecf3bcd7a"
+  },
+  {
+    "path": "docs/features/reporting.md",
+    "bytes": 5880,
+    "sha256": "5b0c00185591d371dabfb4885973842ba80145991b827a549049647cb5a50e39"
+  },
+  {
+    "path": "docs/product/privacy-and-data-policy.md",
+    "bytes": 7265,
+    "sha256": "75c2c329971822d3a026f710780814e864cb2290adc4176f8d4f8adf9732e053"
+  },
+  {
+    "path": "docs/product/requirements.md",
+    "bytes": 10669,
+    "sha256": "5b7d5f6f788a507dce0df01f3a0cdc3eaacac4fbc703aa8f919a3c27afd67105"
+  },
+  {
+    "path": "docs/README.md",
+    "bytes": 3280,
+    "sha256": "79730dbb6a7b5ab9cb2475acd5d772c05d7dc2ac483017fa734c97ae50cbba53"
+  },
+  {
+    "path": "docs/roadmap.md",
+    "bytes": 18330,
+    "sha256": "129cf0418327bc076c38a4718b417d7842cb85d5069eb9d4934aa3daf9df0bbd"
+  },
+  {
+    "path": "README.md",
+    "bytes": 3118,
+    "sha256": "30d36bb76de797f12b938b28362703b43bd5b2d1af9f923ffb4e12d6592310a9"
+  }
+]
