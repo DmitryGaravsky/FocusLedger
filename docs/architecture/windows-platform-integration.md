@@ -59,6 +59,10 @@ Use `GetWindowThreadProcessId` to identify the owning process. Read only metadat
 
 All such failures degrade to limited identity and safe error codes.
 
+Process inspection runs asynchronously outside the message-loop callback. It queries the PID and uses limited-information process access to read the executable path. The path, PID, product name, and file description remain transient and are excluded from JSON serialization and diagnostic string rendering. Only a normalized executable file name may later become part of persisted application identity.
+
+Inspection outcomes are structured as success, limited identity, unavailable window, exited process, access denied, or other platform failure. Failure results contain only a numeric Win32 error and any safely obtained normalized process file name; exception messages and raw paths are not propagated.
+
 ### 2.5 Caption access
 
 Use `GetWindowTextLength`/`GetWindowText` for top-level captions. Do not send arbitrary messages into another process to bypass normal restrictions. Do not persist the returned raw caption.

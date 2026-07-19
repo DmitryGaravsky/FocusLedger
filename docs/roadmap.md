@@ -57,7 +57,7 @@ FocusLedger can run for a full day, correctly record foreground/presence/session
 | WIN-001 | Create hidden message-loop host | Complete | FND-001 | WinExe starts without console/main window and processes Windows messages until clean shutdown. |
 | WIN-002 | Foreground WinEvent collector | Complete | WIN-001, CORE-003 | Foreground changes and selected title changes become signals; callbacks remain non-blocking. |
 | WIN-003 | Foreground reconciliation sampler | Complete | WIN-002 | Missed hook events are corrected within the configured interval without duplicate event output. |
-| WIN-004 | Process/application metadata wrapper | Planned | WIN-002 | Normal process identity is read; exits/access-denied/protected processes degrade safely. |
+| WIN-004 | Process/application metadata wrapper | Complete | WIN-002 | Normal process identity is read; exits/access-denied/protected processes degrade safely. |
 | WIN-005 | Idle detector | Planned | CORE-002 | Default 5-minute threshold uses last-input data and accurate threshold boundary semantics. |
 | WIN-006 | WTS session collector | Planned | WIN-001, CORE-002 | Lock/unlock and local/remote connect/disconnect are recorded for the current user session. |
 | WIN-007 | Power collector | Planned | WIN-001, CORE-002 | Suspend/resume closes attribution, flushes, and reconciles state after resume. |
