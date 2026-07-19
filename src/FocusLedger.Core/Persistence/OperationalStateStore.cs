@@ -100,7 +100,8 @@ public sealed class OperationalStateStore : IAsyncDisposable {
                 await temporaryStream.FlushAsync(cancellationToken).ConfigureAwait(false);
                 temporaryStream.Flush(true);
             }
-            File.Move(temporaryFilePath, stateFilePath, true);
+            await ReplaceTemporaryFileAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
         catch(OperationCanceledException) {
             throw;
@@ -111,6 +112,21 @@ public sealed class OperationalStateStore : IAsyncDisposable {
         finally {
             try { File.Delete(temporaryFilePath); }
             catch { }
+        }
+    }
+    async ValueTask ReplaceTemporaryFileAsync(CancellationToken cancellationToken) {
+        const int MaximumAttempts = 4;
+        for(int attempt = 1; attempt <= MaximumAttempts; attempt++) {
+            try {
+                File.Move(temporaryFilePath, stateFilePath, true);
+                return;
+            }
+            catch(Exception exception) when(exception is IOException or UnauthorizedAccessException) {
+                if(attempt == MaximumAttempts)
+                    throw;
+                await Task.Delay(TimeSpan.FromMilliseconds(25 * attempt), cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
     }
 }

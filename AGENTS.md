@@ -75,6 +75,7 @@ For every roadmap feature:
 - Manage all NuGet package versions centrally through `Directory.Packages.props`; project files must not declare package versions.
 - Use the most restrictive effective visibility. Omit the `private` modifier wherever `private` is the C# default, and widen visibility only when required by a caller, framework, or documented extension boundary.
 - Do not use expression-bodied implementations for properties, property accessors, or methods.
+- For short awaited calls, place `ConfigureAwait(...)` on the following line in fluent-syntax style instead of keeping it on the same line as the invocation.
 - Keep a short property accessor on one line when its implementation is a single simple statement, for example `get { return value; }`, instead of expanding the accessor body across multiple lines.
 - Place `Dispose` or `DisposeAsync` next to the constructor so initialization and released resources can be reviewed together.
 - Omit braces around a short conditional block when its only statement is `return`.

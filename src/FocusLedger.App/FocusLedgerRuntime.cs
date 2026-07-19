@@ -33,7 +33,8 @@ sealed class FocusLedgerRuntime : IAsyncDisposable {
         if(disposed)
             return;
         disposed = true;
-        await operationGate.WaitAsync().ConfigureAwait(false);
+        await operationGate.WaitAsync()
+            .ConfigureAwait(false);
         operationGate.Release();
         operationGate.Dispose();
         await pauseController.DisposeAsync().ConfigureAwait(false);

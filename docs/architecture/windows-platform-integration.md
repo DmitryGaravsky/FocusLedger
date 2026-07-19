@@ -13,6 +13,8 @@ FocusLedger is a `WinExe` that runs a Windows Forms `ApplicationContext` without
 
 No visible window is created during normal operation.
 
+The asynchronous process entry point acquires the per-user singleton before configuration, storage, Windows Forms, or collectors are initialized. Mutex ownership remains on a small dedicated lifetime thread because a Windows mutex must be released by its acquiring thread. `Main` can therefore await runtime initialization and disposal without sync-over-async calls. A separate foreground STA application thread owns Windows Forms initialization, tray resources, and the message loop, and exposes only a completion task.
+
 The message-loop host creates one `NativeWindow` whose parent is `HWND_MESSAGE`. It routes selected messages through small synchronous handlers and owns no forms. Shutdown requests post an internal `WM_APP` message, allowing cancellation or another process-lifetime component to exit the loop without blocking or disposing UI resources from a foreign thread.
 
 The same hidden window exposes a bounded queue of at most 64 UI actions. Background command completion posts fixed tray-state updates through this queue; file I/O never runs in a tray click handler and Windows Forms objects are never accessed from a worker thread. A closing or saturated queue rejects new work without growing process memory.
@@ -190,6 +192,8 @@ Normal foreground changes do not create notifications.
 ## 7. Single instance and local command transport
 
 Use a per-user named mutex and named pipe. Names include a stable product ID plus the current user's SID-derived safe identifier.
+
+The singleton mutex uses the global kernel namespace so the same user cannot start independent console and remote-session collectors. Its suffix is the uppercase SHA-256 digest of the current SID; the SID and account name are not placed in the object name or persisted. The mutex is acquired before tray, storage, and collector initialization. An abandoned mutex transfers ownership to the new process, while an ordinary secondary launch exits without opening activity files.
 
 Requirements:
 
