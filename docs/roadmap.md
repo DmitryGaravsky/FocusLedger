@@ -67,7 +67,7 @@ FocusLedger can run for a full day, correctly record foreground/presence/session
 | DATA-004 | Implement state file and clean-shutdown marker | Complete | DATA-002 | Sequence, manual pause, and clean shutdown recover without personal data. |
 | DATA-005 | Implement crash-tolerant JSONL reader | Complete | DATA-001 | Incomplete trailing line is ignored; malformed middle lines produce safe data-quality errors. |
 | OPS-001 | Add heartbeat and unclean-restart recovery | Complete | DATA-004 | Restart after forced termination emits recovery event and does not invent gap activity. |
-| TEST-001 | Add M1 end-to-end scenario harness | Planned | WIN-002 through DATA-005 | Synthetic foreground, idle, lock, suspend, midnight, and crash scenarios pass. |
+| TEST-001 | Add M1 end-to-end scenario harness | Complete | WIN-002 through DATA-005 | Synthetic foreground, idle, lock, suspend, midnight, and crash scenarios pass. |
 
 ## 5. M2 — Tray, commands, configuration, and autostart
 

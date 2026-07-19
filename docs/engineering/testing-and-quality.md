@@ -83,6 +83,8 @@ Required end-to-end scenarios:
 14. Move the portable executable after enabling autostart.
 15. Run a secondary CLI command while the primary instance is active.
 
+The M1 scenario harness covers the collection-and-persistence subset with production state and storage components: normalized foreground switches, active/idle transitions, lock/unlock precedence, suspend/resume precedence, ordered local-midnight rollover, an incomplete crash-residue line, persisted sequence recovery, and a metadata-only unclean-restart event. Later milestone harnesses extend the same scenario family with configuration, meetings, tray commands, and reports.
+
 ## 4. Privacy tests
 
 Use canary values:

@@ -49,6 +49,21 @@ public sealed class OperationalEventSession : IAsyncDisposable {
         OperationalActivitySignal signal,
         CancellationToken cancellationToken) {
         ArgumentNullException.ThrowIfNull(signal);
+        EventEnvelope envelope = await CreateEnvelopeAsync(
+            GetEventType(signal.Activity),
+            signal.ObservedAt,
+            "operational",
+            cancellationToken).ConfigureAwait(false);
+        return new OperationalActivityEvent(envelope);
+    }
+    // Reserves a common envelope for any privacy-normalized event before it enters persistence.
+    public async ValueTask<EventEnvelope> CreateEnvelopeAsync(
+        string eventType,
+        DateTimeOffset observedAt,
+        string source,
+        CancellationToken cancellationToken) {
+        ArgumentException.ThrowIfNullOrWhiteSpace(eventType);
+        ArgumentException.ThrowIfNullOrWhiteSpace(source);
         ObjectDisposedException.ThrowIf(disposed, this);
         await sessionGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try {
@@ -56,7 +71,7 @@ public sealed class OperationalEventSession : IAsyncDisposable {
             long sequence = nextSequence;
             nextSequence = checked(nextSequence + 1);
             await stateStore.SaveProgressAsync(nextSequence, manualPause, cancellationToken).ConfigureAwait(false);
-            DateTimeOffset timestampUtc = signal.ObservedAt.ToUniversalTime();
+            DateTimeOffset timestampUtc = observedAt.ToUniversalTime();
             int utcOffsetMinutes = checked((int)localTimeZone.GetUtcOffset(timestampUtc.UtcDateTime).TotalMinutes);
             EventEnvelope envelope = new(
                 1,
@@ -64,9 +79,9 @@ public sealed class OperationalEventSession : IAsyncDisposable {
                 Guid.CreateVersion7(),
                 timestampUtc,
                 utcOffsetMinutes,
-                GetEventType(signal.Activity),
-                "operational");
-            return new OperationalActivityEvent(envelope);
+                eventType,
+                source);
+            return envelope;
         }
         finally { sessionGate.Release(); }
     }
