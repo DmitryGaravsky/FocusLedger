@@ -76,6 +76,8 @@ For every roadmap feature:
 - Use the most restrictive effective visibility. Omit the `private` modifier wherever `private` is the C# default, and widen visibility only when required by a caller, framework, or documented extension boundary.
 - Do not use expression-bodied implementations for properties, property accessors, or methods.
 - For short awaited calls, place `ConfigureAwait(...)` on the following line in fluent-syntax style instead of keeping it on the same line as the invocation.
+- Prefer a `using(...) { ... }` statement with explicit braces when the resource lifetime is meaningful to the surrounding flow. Do not use a using declaration when its scope would need to be inferred from the end of the method.
+- Put an exception filter on the line after `catch(...)`, indented once more than `catch`, so the caught type and the `when(...)` condition remain visually distinct.
 - Keep a short property accessor on one line when its implementation is a single simple statement, for example `get { return value; }`, instead of expanding the accessor body across multiple lines.
 - Place `Dispose` or `DisposeAsync` next to the constructor so initialization and released resources can be reviewed together.
 - Omit braces around a short conditional block when its only statement is `return`.

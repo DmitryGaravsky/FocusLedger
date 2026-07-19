@@ -49,7 +49,8 @@ public sealed class HeartbeatSignalSource : IActivitySignalSource {
                     while(await timer.WaitForNextTickAsync(linkedCancellation.Token).ConfigureAwait(false))
                         Publish(signalSink);
                 }
-                catch(OperationCanceledException) when(linkedCancellation.IsCancellationRequested) {
+                catch(OperationCanceledException)
+                    when(linkedCancellation.IsCancellationRequested) {
                 }
             }
         }

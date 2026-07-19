@@ -59,14 +59,19 @@ public sealed class PerUserSingleInstance : IDisposable {
     }
     void RunOwnershipThread() {
         try {
-            using Mutex mutex = new(false, mutexName);
-            try { isPrimary = mutex.WaitOne(TimeSpan.Zero); }
-            catch(AbandonedMutexException) { isPrimary = true; }
-            acquisitionCompleted.Set();
-            if(!isPrimary)
-                return;
-            releaseRequested.Wait();
-            mutex.ReleaseMutex();
+            using(Mutex mutex = new(false, mutexName)) {
+                try {
+                    isPrimary = mutex.WaitOne(TimeSpan.Zero);
+                }
+                catch(AbandonedMutexException) {
+                    isPrimary = true;
+                }
+                acquisitionCompleted.Set();
+                if(!isPrimary)
+                    return;
+                releaseRequested.Wait();
+                mutex.ReleaseMutex();
+            }
         }
         catch(Exception exception) {
             acquisitionException = exception;

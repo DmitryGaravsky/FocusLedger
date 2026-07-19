@@ -123,7 +123,8 @@ public sealed class JsonlActivityEventWriter : IActivityEventWriter {
                     finally { streamGate.Release(); }
                 }
             }
-            catch(OperationCanceledException) when(cancellationToken.IsCancellationRequested) {
+            catch(OperationCanceledException)
+                when(cancellationToken.IsCancellationRequested) {
             }
             catch {
                 Interlocked.Exchange(ref backgroundFailure, 1);

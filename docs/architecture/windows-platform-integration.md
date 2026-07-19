@@ -203,6 +203,8 @@ Requirements:
 - malformed commands do not crash the primary process;
 - no TCP or HTTP listener is used.
 
+Schema 1 uses a four-byte little-endian payload length followed by at most 4096 UTF-8 JSON bytes. Each connection carries one request and one acknowledgement. The pipe is created with `PipeOptions.CurrentUserOnly`; both its name and the singleton mutex name use SID-derived hashes. The initial command allowlist is `status`, `pause`, `resume`, and `quit`. Unknown schema versions, unknown commands, malformed JSON, truncated frames, and oversized frames are rejected without invoking an application handler.
+
 ## 8. Autostart
 
 Use:

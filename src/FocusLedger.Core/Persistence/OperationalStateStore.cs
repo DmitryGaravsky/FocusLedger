@@ -121,7 +121,8 @@ public sealed class OperationalStateStore : IAsyncDisposable {
                 File.Move(temporaryFilePath, stateFilePath, true);
                 return;
             }
-            catch(Exception exception) when(exception is IOException or UnauthorizedAccessException) {
+            catch(Exception exception)
+                when(exception is IOException or UnauthorizedAccessException) {
                 if(attempt == MaximumAttempts)
                     throw;
                 await Task.Delay(TimeSpan.FromMilliseconds(25 * attempt), cancellationToken)

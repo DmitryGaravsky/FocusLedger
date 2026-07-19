@@ -1,6 +1,7 @@
 ﻿namespace FocusLedger.App;
 
 using FocusLedger.Core.State;
+using FocusLedger.Windows.Commands;
 using FocusLedger.Windows.Messaging;
 using FocusLedger.Windows.Tray;
 
@@ -12,7 +13,7 @@ sealed class AppTrayCommandDispatcher {
     readonly FocusLedgerRuntime runtime;
     readonly WindowsMessageLoopHost messageLoopHost;
     TrayStatusIndicator? trayStatusIndicator;
-    bool stopping;
+    int stopping;
     public AppTrayCommandDispatcher(FocusLedgerRuntime runtime, WindowsMessageLoopHost messageLoopHost) {
         this.runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
         this.messageLoopHost = messageLoopHost ?? throw new ArgumentNullException(nameof(messageLoopHost));
@@ -26,38 +27,61 @@ sealed class AppTrayCommandDispatcher {
     }
     public void Handle(TrayCommand command) {
         if(command == TrayCommand.PauseTracking) {
-            _ = SetPausedAsync(true);
+            _ = HandleTrayCommandAsync(LocalCommandKind.Pause);
             return;
         }
         if(command == TrayCommand.ResumeTracking) {
-            _ = SetPausedAsync(false);
+            _ = HandleTrayCommandAsync(LocalCommandKind.Resume);
             return;
         }
-        if(command == TrayCommand.Exit && !stopping) {
-            stopping = true;
-            _ = StopAsync();
-        }
+        if(command == TrayCommand.Exit)
+            _ = HandleTrayCommandAsync(LocalCommandKind.Quit);
     }
-    async Task SetPausedAsync(bool paused) {
+    public async ValueTask<LocalCommandResult> HandleLocalCommandAsync(
+        LocalCommandKind command,
+        CancellationToken cancellationToken) {
+        if(command == LocalCommandKind.Status)
+            return new LocalCommandResult(true, GetStatusName(runtime.State));
+        if(command == LocalCommandKind.Quit)
+            return await StopAsync(cancellationToken)
+                .ConfigureAwait(false);
+        bool paused = command == LocalCommandKind.Pause;
         try {
-            TrackerLifecycleState state = await runtime.SetPausedAsync(paused, CancellationToken.None).ConfigureAwait(false);
+            TrackerLifecycleState state = await runtime.SetPausedAsync(paused, cancellationToken)
+                .ConfigureAwait(false);
             PostState(CreateMenuState(state, false));
+            return new LocalCommandResult(true, GetStatusName(state));
         }
         catch {
             PostState(CreateMenuState(runtime.State, true));
+            return new LocalCommandResult(false, "error");
         }
     }
-    async Task StopAsync() {
+    async ValueTask<LocalCommandResult> StopAsync(CancellationToken cancellationToken) {
+        if(Interlocked.Exchange(ref stopping, 1) != 0)
+            return new LocalCommandResult(true, "stopping");
         bool hasError = false;
         try {
-            await runtime.StopAsync(CancellationToken.None).ConfigureAwait(false);
+            await runtime.StopAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
         catch { hasError = true; }
-        TryPost(() => {
-            if(hasError)
-                trayStatusIndicator!.Update(CreateMenuState(runtime.State, true));
-            messageLoopHost.RequestExit();
-        });
+        Func<ValueTask> afterAcknowledgement = () => {
+            TryPost(() => {
+                if(hasError)
+                    trayStatusIndicator!.Update(CreateMenuState(runtime.State, true));
+                messageLoopHost.RequestExit();
+            });
+            return ValueTask.CompletedTask;
+        };
+        return new LocalCommandResult(!hasError, hasError ? "error" : "stopping", afterAcknowledgement);
+    }
+    async Task HandleTrayCommandAsync(LocalCommandKind command) {
+        LocalCommandResult result = await HandleLocalCommandAsync(command, CancellationToken.None)
+            .ConfigureAwait(false);
+        if(result.AfterAcknowledgement is not null)
+            await result.AfterAcknowledgement()
+                .ConfigureAwait(false);
     }
     void PostState(TrayMenuState state) {
         TryPost(() => trayStatusIndicator!.Update(state));
@@ -69,5 +93,15 @@ sealed class AppTrayCommandDispatcher {
     static TrayMenuState CreateMenuState(TrackerLifecycleState state, bool hasError) {
         TrayActivityState activity = state == TrackerLifecycleState.Paused ? TrayActivityState.Paused : TrayActivityState.Active;
         return new TrayMenuState(new TrayStatus(activity, false, hasError), Capabilities, false);
+    }
+    static string GetStatusName(TrackerLifecycleState state) {
+        return state switch {
+            TrackerLifecycleState.Running => "running",
+            TrackerLifecycleState.Paused => "paused",
+            TrackerLifecycleState.Stopping => "stopping",
+            TrackerLifecycleState.Stopped => "stopped",
+            TrackerLifecycleState.Faulted => "error",
+            _ => "starting"
+        };
     }
 }

@@ -1,4 +1,5 @@
-﻿using FocusLedger.Windows.Messaging;
+﻿using FocusLedger.Windows.Commands;
+using FocusLedger.Windows.Messaging;
 using FocusLedger.Windows.SingleInstance;
 using FocusLedger.Windows.Tray;
 
@@ -9,16 +10,44 @@ static class Program {
         get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FocusLedger"); }
     }
     [STAThread]
-    static async Task Main() {
+    static async Task Main(string[] args) {
+        if(!LocalCommandLine.TryParse(args, out LocalCommandKind? startupCommand))
+            return;
         using(PerUserSingleInstance singleInstance = PerUserSingleInstance.Acquire()) {
-            if(!singleInstance.IsPrimary)
+            if(!singleInstance.IsPrimary) {
+                await ForwardToPrimaryAsync(startupCommand ?? LocalCommandKind.Status)
+                    .ConfigureAwait(false);
                 return;
+            }
             FocusLedgerRuntime runtime = new(StorageRootPath, TimeProvider.System);
             try {
                 await runtime.InitializeAsync(CancellationToken.None)
                     .ConfigureAwait(false);
-                await RunStaApplicationAsync(runtime)
+                TaskCompletionSource<AppTrayCommandDispatcher> dispatcherReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                Task applicationTask = RunStaApplicationAsync(runtime, dispatcherReady);
+                AppTrayCommandDispatcher dispatcher = await dispatcherReady.Task
                     .ConfigureAwait(false);
+                using(CancellationTokenSource commandServerCancellation = new()) {
+                    LocalCommandServer commandServer = new(dispatcher.HandleLocalCommandAsync);
+                    Task commandServerTask = commandServer.RunAsync(commandServerCancellation.Token);
+                    try {
+                        if(startupCommand is not null) {
+                            LocalCommandResult result = await dispatcher.HandleLocalCommandAsync(startupCommand.Value, CancellationToken.None)
+                                .ConfigureAwait(false);
+                            if(result.AfterAcknowledgement is not null)
+                                await result.AfterAcknowledgement()
+                                    .ConfigureAwait(false);
+                        }
+                        await applicationTask
+                            .ConfigureAwait(false);
+                    }
+                    finally {
+                        await commandServerCancellation.CancelAsync()
+                            .ConfigureAwait(false);
+                        await commandServerTask
+                            .ConfigureAwait(false);
+                    }
+                }
             }
             finally {
                 await runtime.DisposeAsync()
@@ -27,9 +56,11 @@ static class Program {
         }
     }
     // Runs all Windows Forms resources on one dedicated STA thread and exposes only its completion task.
-    static Task RunStaApplicationAsync(FocusLedgerRuntime runtime) {
+    static Task RunStaApplicationAsync(
+        FocusLedgerRuntime runtime,
+        TaskCompletionSource<AppTrayCommandDispatcher> dispatcherReady) {
         TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        Thread applicationThread = new(() => RunStaApplication(runtime, completion)) {
+        Thread applicationThread = new(() => RunStaApplication(runtime, dispatcherReady, completion)) {
             IsBackground = false,
             Name = "FocusLedger.Application"
         };
@@ -37,22 +68,35 @@ static class Program {
         applicationThread.Start();
         return completion.Task;
     }
-    static void RunStaApplication(FocusLedgerRuntime runtime, TaskCompletionSource completion) {
+    static void RunStaApplication(
+        FocusLedgerRuntime runtime,
+        TaskCompletionSource<AppTrayCommandDispatcher> dispatcherReady,
+        TaskCompletionSource completion) {
         try {
             ApplicationConfiguration.Initialize();
             using(WindowsMessageLoopHost messageLoopHost = new()) {
                 AppTrayCommandDispatcher dispatcher = new(runtime, messageLoopHost);
                 using(TrayStatusIndicator trayStatusIndicator = new(dispatcher.Handle)) {
                     dispatcher.Attach(trayStatusIndicator);
+                    dispatcherReady.TrySetResult(dispatcher);
                     messageLoopHost.Run(CancellationToken.None);
                 }
             }
         }
         catch(Exception exception) {
+            dispatcherReady.TrySetException(exception);
             completion.TrySetException(exception);
         }
-        finally {
-            completion.TrySetResult();
+        finally { completion.TrySetResult(); }
+    }
+    static async ValueTask ForwardToPrimaryAsync(LocalCommandKind command) {
+        try {
+            LocalCommandClient client = new();
+            await client.SendAsync(command, TimeSpan.FromSeconds(5), CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+        catch(Exception exception)
+            when(exception is IOException or TimeoutException or OperationCanceledException) {
         }
     }
 }

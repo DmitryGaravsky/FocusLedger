@@ -6,8 +6,8 @@
   },
   {
     "path": "AGENTS.md",
-    "bytes": 8741,
-    "sha256": "ebafd047303d148614d2f30534b42b1a7276d02f17e41f02197218d88a63f607"
+    "bytes": 9138,
+    "sha256": "527602c71db791ae5c71d724371c1bc4d69459b6615c0a912e8c65c854f7907d"
   },
   {
     "path": "CONTRIBUTING.md",
@@ -51,8 +51,8 @@
   },
   {
     "path": "docs/architecture/windows-platform-integration.md",
-    "bytes": 13496,
-    "sha256": "bb02f8d6c31bc6ab126f1dc1cc2b8db9ba1247e951f0376ea06d4c48d4e601b0"
+    "bytes": 14007,
+    "sha256": "0a2cab94c622f035b314c844c66abe320daa4db770c46adb34a34d2bf31eb963"
   },
   {
     "path": "docs/data/configuration.md",
@@ -106,8 +106,8 @@
   },
   {
     "path": "docs/roadmap.md",
-    "bytes": 18438,
-    "sha256": "a222e87f7d19c52535a5757e4aef7b9a4e1012cff146806f1bf271266faaa675"
+    "bytes": 18439,
+    "sha256": "846781dcd285427e03858389e9290412b1b48b16d3d71e643262611d1dad5bea"
   },
   {
     "path": "README.md",
