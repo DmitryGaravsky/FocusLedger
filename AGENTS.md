@@ -76,6 +76,11 @@ For every roadmap feature:
 - Use the most restrictive effective visibility. Omit the `private` modifier wherever `private` is the C# default, and widen visibility only when required by a caller, framework, or documented extension boundary.
 - Do not use expression-bodied implementations for properties, property accessors, or methods.
 - Keep a short property accessor on one line when its implementation is a single simple statement, for example `get { return value; }`, instead of expanding the accessor body across multiple lines.
+- Place `Dispose` or `DisposeAsync` next to the constructor so initialization and released resources can be reviewed together.
+- Omit braces around a short conditional block when its only statement is `return`.
+- Omit braces around a short conditional block when its only statement is `throw`.
+- Always use braces and indentation for a `using (...)` statement, including a short body, so the lifetime scope of the disposable object is visually explicit.
+- Do not duplicate production functionality in tests. Expose the narrowest required internal surface through `InternalsVisibleTo` for the corresponding test assembly.
 - Do not use block comments (`/* ... */`) or documentation comments (`///`). Use ordinary line comments only when a comment is necessary.
 - Do not leave blank lines between method declarations or inside method bodies. When a method needs logical sections, separate them with an ordinary line comment that explains the purpose of the following section.
 - Prefer immutable records for persisted events, configuration snapshots, and state-machine inputs.

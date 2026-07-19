@@ -13,6 +13,8 @@ FocusLedger is a `WinExe` that runs a Windows Forms `ApplicationContext` without
 
 No visible window is created during normal operation.
 
+The message-loop host creates one `NativeWindow` whose parent is `HWND_MESSAGE`. It routes selected messages through small synchronous handlers and owns no forms. Shutdown requests post an internal `WM_APP` message, allowing cancellation or another process-lifetime component to exit the loop without blocking or disposing UI resources from a foreign thread.
+
 ## 2. Foreground tracking
 
 ### 2.1 Primary signal

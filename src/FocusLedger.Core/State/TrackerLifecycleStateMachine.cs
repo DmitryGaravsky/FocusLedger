@@ -54,9 +54,8 @@ public sealed class TrackerLifecycleStateMachine {
         if(State == targetState) {
             return Unchanged();
         }
-        if(State != requiredState) {
+        if(State != requiredState)
             throw InvalidTransition(targetState);
-        }
         return TransitionTo(targetState);
     }
     TrackerLifecycleTransition TransitionTo(TrackerLifecycleState targetState) {

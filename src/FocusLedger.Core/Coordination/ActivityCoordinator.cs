@@ -11,16 +11,11 @@ public sealed class ActivityCoordinator : IActivitySignalSink, IAsyncDisposable 
     readonly Channel<ActivitySignal> channel;
     readonly IActivitySignalProcessor signalProcessor;
     readonly IActivityEventWriter eventWriter;
-    readonly ActivityRuntimeState runtimeState = new();
     readonly List<ActivitySignal> pendingCoalescibleSignals = [];
-    readonly Lock pendingSignalsLock = new();
     readonly int capacity;
     int queueDepth;
-    long coalescedSignalCount;
-    long rejectedSignalCount;
-    long processedSignalCount;
-    int completionRequested;
-    int runStarted;
+    long coalescedSignalCount, rejectedSignalCount, processedSignalCount;
+    int completionRequested, runStarted;
     public ActivityCoordinator(IActivitySignalProcessor signalProcessor, IActivityEventWriter eventWriter, int capacity) {
         ArgumentNullException.ThrowIfNull(signalProcessor);
         ArgumentNullException.ThrowIfNull(eventWriter);
@@ -35,6 +30,11 @@ public sealed class ActivityCoordinator : IActivitySignalSink, IAsyncDisposable 
             AllowSynchronousContinuations = false
         });
     }
+    public async ValueTask DisposeAsync() {
+        Complete();
+        await eventWriter.DisposeAsync().ConfigureAwait(false);
+    }
+    readonly ActivityRuntimeState runtimeState = new();
     public TrackerLifecycleState TrackerState {
         get { return runtimeState.TrackerLifecycle.State; }
     }
@@ -75,7 +75,8 @@ public sealed class ActivityCoordinator : IActivitySignalSink, IAsyncDisposable 
             return;
         }
         try {
-            await channel.Writer.WriteAsync(signal, cancellationToken).ConfigureAwait(false);
+            await channel.Writer.WriteAsync(signal, cancellationToken)
+                .ConfigureAwait(false);
             Interlocked.Increment(ref queueDepth);
         }
         catch {
@@ -85,62 +86,56 @@ public sealed class ActivityCoordinator : IActivitySignalSink, IAsyncDisposable 
     }
     // Runs exactly one consumer until completion or cancellation and writes emitted events in signal order.
     public async Task RunAsync(CancellationToken cancellationToken) {
-        if(Interlocked.Exchange(ref runStarted, 1) != 0) {
+        if(Interlocked.Exchange(ref runStarted, 1) != 0)
             throw new InvalidOperationException("The activity coordinator consumer can run only once.");
-        }
-        await foreach(ActivitySignal signal in channel.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false)) {
+        var orderedSignalsQueue = channel.Reader.ReadAllAsync(cancellationToken)
+            .ConfigureAwait(false);
+        await foreach(ActivitySignal signal in orderedSignalsQueue) {
             Interlocked.Decrement(ref queueDepth);
             try {
-                IReadOnlyList<ActivityEvent> events = await signalProcessor.ProcessAsync(signal, runtimeState, cancellationToken).ConfigureAwait(false);
+                IReadOnlyList<ActivityEvent> events = await signalProcessor.ProcessAsync(signal, runtimeState, cancellationToken)
+                    .ConfigureAwait(false);
                 foreach(ActivityEvent activityEvent in events) {
-                    await eventWriter.AppendAsync(activityEvent, cancellationToken).ConfigureAwait(false);
+                    await eventWriter.AppendAsync(activityEvent, cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 Interlocked.Increment(ref processedSignalCount);
             }
             catch {
-                if(runtimeState.TrackerLifecycle.State is not TrackerLifecycleState.Stopped and not TrackerLifecycleState.Faulted) {
+                if(runtimeState.TrackerLifecycle.State
+                    is not TrackerLifecycleState.Stopped
+                    and not TrackerLifecycleState.Faulted) {
                     runtimeState.TrackerLifecycle.Fault();
                 }
                 throw;
             }
-            finally {
-                ReleaseCoalescible(signal);
-            }
+            finally { ReleaseCoalescible(signal); }
         }
     }
     // Completes producer admission while allowing the consumer to drain accepted signals.
     public void Complete() {
-        if(Interlocked.Exchange(ref completionRequested, 1) == 0) {
+        if(Interlocked.Exchange(ref completionRequested, 1) == 0)
             channel.Writer.TryComplete();
-        }
     }
-    public async ValueTask DisposeAsync() {
-        Complete();
-        await eventWriter.DisposeAsync().ConfigureAwait(false);
-    }
+    readonly Lock pendingSignalsLock = new();
     bool TryReserveCoalescible(ActivitySignal signal) {
-        if(signal.Delivery != SignalDelivery.Coalescible) {
+        if(signal.Delivery != SignalDelivery.Coalescible)
             return true;
-        }
         lock(pendingSignalsLock) {
-            if(pendingCoalescibleSignals.Exists(signal.CanCoalesceWith)) {
+            if(pendingCoalescibleSignals.Exists(signal.CanCoalesceWith))
                 return false;
-            }
             pendingCoalescibleSignals.Add(signal);
             return true;
         }
     }
     void ReleaseCoalescible(ActivitySignal signal) {
-        if(signal.Delivery != SignalDelivery.Coalescible) {
+        if(signal.Delivery != SignalDelivery.Coalescible)
             return;
-        }
-        lock(pendingSignalsLock) {
+        lock(pendingSignalsLock)
             pendingCoalescibleSignals.RemoveAll(pendingSignal => ReferenceEquals(pendingSignal, signal));
-        }
     }
     void ThrowIfCompleted() {
-        if(Volatile.Read(ref completionRequested) != 0) {
+        if(Volatile.Read(ref completionRequested) != 0)
             throw new ChannelClosedException();
-        }
     }
 }
