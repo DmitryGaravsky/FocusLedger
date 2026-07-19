@@ -1,5 +1,24 @@
 ﻿namespace FocusLedger.Core.State;
 
+// Identifies the process-level lifecycle phase independently from presence and activity context.
+public enum TrackerLifecycleState {
+    Starting,
+    Running,
+    Paused,
+    Stopping,
+    Stopped,
+    Faulted
+}
+
+// Describes an accepted lifecycle command so callers can emit events only for semantic changes.
+public sealed record TrackerLifecycleTransition(
+    TrackerLifecycleState PreviousState,
+    TrackerLifecycleState CurrentState) {
+    public bool Changed {
+        get { return PreviousState != CurrentState; }
+    }
+}
+
 // Owns deterministic tracker lifecycle transitions for the serialized runtime coordinator.
 public sealed class TrackerLifecycleStateMachine {
     TrackerLifecycleState state = TrackerLifecycleState.Starting;

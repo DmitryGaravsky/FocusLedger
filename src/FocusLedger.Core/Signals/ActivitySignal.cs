@@ -1,5 +1,11 @@
 ﻿namespace FocusLedger.Core.Signals;
 
+// Declares whether bounded-pipeline saturation may coalesce a signal or must preserve it.
+public enum SignalDelivery {
+    NonDroppable,
+    Coalescible
+}
+
 // Represents one observed platform condition before state transition and privacy processing.
 public abstract record ActivitySignal(
     DateTimeOffset ObservedAt,

@@ -81,9 +81,12 @@ For every roadmap feature:
 - Omit braces around a short conditional block when its only statement is `throw`.
 - Always use braces and indentation for a `using (...)` statement, including a short body, so the lifetime scope of the disposable object is visually explicit.
 - Do not duplicate production functionality in tests. Expose the narrowest required internal surface through `InternalsVisibleTo` for the corresponding test assembly.
+- Keep every Windows P/Invoke declaration in the top-level `FocusLedger.Windows.NativeMethods` class. Feature adapters must wrap that shared interop surface instead of declaring native methods locally.
 - Do not use block comments (`/* ... */`) or documentation comments (`///`). Use ordinary line comments only when a comment is necessary.
 - Do not leave blank lines between method declarations or inside method bodies. When a method needs logical sections, separate them with an ordinary line comment that explains the purpose of the following section.
 - Prefer immutable records for persisted events, configuration snapshots, and state-machine inputs.
+- Keep an enum in the same file as the class, record, or interface it closely belongs to instead of creating a separate enum-only file. This should make the relationship obvious during review.
+- Apply the same co-location rule to delegates and small records containing two or three fields when they closely belong to another contract. Keep them in the related contract file instead of creating delegate-only or small-record-only files.
 - Use `System.Text.Json` source generation for event and configuration serialization when practical.
 - Do not use reflection-based plugin loading in the first stable release.
 - Use dependency injection only at process composition boundaries; do not turn simple domain objects into service-locator clients.

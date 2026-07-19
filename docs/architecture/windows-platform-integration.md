@@ -26,6 +26,10 @@ Register `SetWinEventHook` for:
 
 Use out-of-context hooks. Callback code must copy minimal identifiers into an immutable signal and return quickly.
 
+The callback persists no process or caption data. It copies only the opaque top-level window handle, observation kind, UTC observation time, and monotonic timestamp. Foreground switches are non-droppable signals. Filtered title changes are coalescible candidates; debounce, caption inspection, privacy normalization, and semantic comparison happen after callback handoff.
+
+Hook registration failure releases any hook already registered and reports only the numeric Win32 error. Callback exceptions are contained at the native boundary and represented by aggregate privacy-safe counters.
+
 ### 2.2 Title-change filtering
 
 `EVENT_OBJECT_NAMECHANGE` is noisy. Accept a title-change candidate only when:
@@ -34,6 +38,8 @@ Use out-of-context hooks. Callback code must copy minimal identifiers into an im
 - it is not an irrelevant child-object change;
 - it survives a short debounce;
 - a fresh caption produces a different normalized context or classification.
+
+The WinEvent collector performs the first two filters. The serialized downstream processor performs debounce and the final semantic checks once title inspection and classification are available.
 
 ### 2.3 Reconciliation
 

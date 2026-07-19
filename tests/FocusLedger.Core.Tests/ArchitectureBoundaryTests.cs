@@ -1,9 +1,11 @@
-﻿namespace FocusLedger.Core.Tests;
+﻿using FocusLedger.Core.Abstractions;
+
+namespace FocusLedger.Core.Tests;
 
 public sealed class ArchitectureBoundaryTests {
     [Test]
     public void CoreAssemblyDoesNotReferenceWindowsDesktopAssemblies() {
-        string[] referencedAssemblies = typeof(CoreAssemblyMarker).Assembly
+        string[] referencedAssemblies = typeof(IActivitySignalSource).Assembly
             .GetReferencedAssemblies()
             .Select(static assembly => assembly.Name ?? string.Empty)
             .ToArray();

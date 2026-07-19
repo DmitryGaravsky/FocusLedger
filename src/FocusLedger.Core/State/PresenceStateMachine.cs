@@ -1,5 +1,24 @@
 ﻿namespace FocusLedger.Core.State;
 
+// Identifies the single effective presence state used for activity attribution.
+public enum PresenceState {
+    Unknown,
+    Active,
+    Idle,
+    SessionLocked,
+    SessionDisconnected,
+    SystemSuspended
+}
+
+// Describes the effective presence change produced by one reconciled condition snapshot.
+public sealed record PresenceTransition(
+    PresenceState PreviousState,
+    PresenceState CurrentState) {
+    public bool Changed {
+        get { return PreviousState != CurrentState; }
+    }
+}
+
 // Resolves mutually exclusive presence attribution using the documented suppression precedence.
 public sealed class PresenceStateMachine {
     PresenceState state = PresenceState.Unknown;
