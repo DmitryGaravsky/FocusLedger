@@ -53,3 +53,22 @@ public sealed record SystemPowerActivitySignal(
     SystemPowerActivityKind Activity,
     DateTimeOffset ObservedAt,
     long MonotonicTimestamp) : ActivitySignal(ObservedAt, MonotonicTimestamp, SignalDelivery.NonDroppable);
+
+public enum OperationalActivitySignalKind {
+    TrackerStarted,
+    RecoveredAfterUncleanShutdown,
+    Heartbeat
+}
+
+// Requests one lifecycle or liveness event without carrying reconstructed activity for an unobserved gap.
+public sealed record OperationalActivitySignal(
+    OperationalActivitySignalKind Activity,
+    DateTimeOffset ObservedAt,
+    long MonotonicTimestamp) : ActivitySignal(
+        ObservedAt,
+        MonotonicTimestamp,
+        Activity == OperationalActivitySignalKind.Heartbeat ? SignalDelivery.Coalescible : SignalDelivery.NonDroppable) {
+    public override bool CanCoalesceWith(ActivitySignal other) {
+        return other is OperationalActivitySignal { Activity: OperationalActivitySignalKind.Heartbeat };
+    }
+}

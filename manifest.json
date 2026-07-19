@@ -46,8 +46,8 @@
   },
   {
     "path": "docs/architecture/runtime-state-machine.md",
-    "bytes": 6556,
-    "sha256": "f001485e4db617f6ed9007dad5433679fc13e8600893f17b5da1d6496c795d13"
+    "bytes": 7502,
+    "sha256": "0f00a7fc9efbd49a0523d4bec3c8e11e4c6c06a0ae25d29ef649121623d0d324"
   },
   {
     "path": "docs/architecture/windows-platform-integration.md",
@@ -106,8 +106,8 @@
   },
   {
     "path": "docs/roadmap.md",
-    "bytes": 18432,
-    "sha256": "464ce91eef6db5cba057be85ce657b5fdc11c0c8480c11bea978a2fa99268a9b"
+    "bytes": 18433,
+    "sha256": "c5c366fd161af7e02becf0a1e6f77c1f73f2cd5964d664097631496f148efadc"
   },
   {
     "path": "README.md",

@@ -14,6 +14,9 @@ public static class ActivityEventJsonSerializer {
             StateSnapshotActivityEvent stateSnapshotActivityEvent => JsonSerializer.SerializeToUtf8Bytes(
                 stateSnapshotActivityEvent,
                 ActivityEventJsonContext.Default.StateSnapshotActivityEvent),
+            OperationalActivityEvent operationalActivityEvent => JsonSerializer.SerializeToUtf8Bytes(
+                operationalActivityEvent,
+                ActivityEventJsonContext.Default.OperationalActivityEvent),
             _ => throw new NotSupportedException("The activity event type does not have a registered schema serializer.")
         };
     }

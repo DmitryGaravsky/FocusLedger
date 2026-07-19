@@ -147,6 +147,10 @@ At startup:
 
 No duration is invented for the gap between the last recorded heartbeat/event and the new process start. Reports show it as unobserved time.
 
+`OperationalEventSession` marks the run dirty before returning initialization state and reserves each sequence in `state.json` before exposing its event to the writer pipeline. Initialization requests one recovery signal when the previous marker was dirty or invalid. The recovery event contains only the common envelope; it does not contain a previous foreground, presence, duration, gap estimate, or copied state-file content.
+
+`HeartbeatSignalSource` produces a coalescible signal at the configured interval, default 60 seconds. It uses only the non-blocking bounded-channel path, retries naturally after rejection, and does not change foreground or presence state. `OperationalSignalProcessor` converts startup, recovery, and heartbeat signals into compact source-generated events inside the serialized coordinator. Graceful shutdown marks the operational session clean only after the coordinator has drained and the writer has flushed.
+
 ## 8. Rollover behavior
 
 At local midnight:
