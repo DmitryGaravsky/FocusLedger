@@ -52,4 +52,15 @@ static class NativeMethods {
     internal static extern bool GetLastInputInfo(ref LastInputInfo lastInputInfo);
     [DllImport("kernel32.dll")]
     internal static extern ulong GetTickCount64();
+    [DllImport("kernel32.dll")]
+    internal static extern uint GetCurrentProcessId();
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool ProcessIdToSessionId(uint processId, out uint sessionId);
+    [DllImport("wtsapi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool WTSRegisterSessionNotification(nint windowHandle, uint flags);
+    [DllImport("wtsapi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool WTSUnRegisterSessionNotification(nint windowHandle);
 }

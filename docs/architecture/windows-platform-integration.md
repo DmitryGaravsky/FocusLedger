@@ -99,6 +99,10 @@ Register the hidden window through `WTSRegisterSessionNotification`. Handle at l
 
 Only events for the current process user's session are attributed. Remote Desktop is supported for the current user; other sessions are ignored.
 
+Registration uses `NOTIFY_FOR_THIS_SESSION`, and every delivered message is additionally filtered against the session ID resolved for the current FocusLedger process. Persistable signals contain only the transition kind and timestamps; they never contain a Windows user name, remote endpoint, client name, or session identifier.
+
+The WTS callback path performs only constant-time mapping and a non-blocking signal write. Registration, session-resolution, and unregistration failures are counted as platform failures and degrade without stopping foreground or idle collection. Unknown WTS notification codes are ignored. The collector unregisters the same hidden window during deterministic disposal.
+
 ## 5. Power notifications
 
 Handle suspend/resume through `WM_POWERBROADCAST` and/or `SystemEvents.PowerModeChanged`, with one abstraction producing normalized signals.

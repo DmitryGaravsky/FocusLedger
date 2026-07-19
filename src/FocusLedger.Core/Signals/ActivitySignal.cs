@@ -23,3 +23,21 @@ public sealed record PresenceActivitySignal(
     TimeSpan IdleThreshold,
     DateTimeOffset ObservedAt,
     long MonotonicTimestamp) : ActivitySignal(ObservedAt, MonotonicTimestamp, SignalDelivery.NonDroppable);
+
+// Identifies a session boundary without retaining a user, machine, or remote endpoint identity.
+public enum SessionActivityKind {
+    ConsoleConnected,
+    ConsoleDisconnected,
+    RemoteConnected,
+    RemoteDisconnected,
+    Logon,
+    Logoff,
+    Locked,
+    Unlocked
+}
+
+// Carries one current-session transition from the WTS message boundary to the serialized coordinator.
+public sealed record SessionActivitySignal(
+    SessionActivityKind Activity,
+    DateTimeOffset ObservedAt,
+    long MonotonicTimestamp) : ActivitySignal(ObservedAt, MonotonicTimestamp, SignalDelivery.NonDroppable);
