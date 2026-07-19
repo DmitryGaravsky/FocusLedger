@@ -230,6 +230,8 @@ Schema 1 readers:
 - validate required envelope fields;
 - expose unsupported schema versions as data-quality errors rather than silently misinterpreting them.
 
+Core event serialization uses generated `System.Text.Json` metadata rather than reflection-based contract discovery. The schema-1 foreground contract has a flattened envelope and typed privacy-safe application, context, and classification payloads. Null optional common fields and absent safe context are omitted. Compatibility tests deserialize the normative fixture, serialize it back to the canonical property set, and verify that additive unknown properties at envelope and nested-payload levels are ignored.
+
 Additive optional fields do not require a schema increment. Renaming/removing fields or changing semantics does.
 
 ## 12. Naming baseline fixtures

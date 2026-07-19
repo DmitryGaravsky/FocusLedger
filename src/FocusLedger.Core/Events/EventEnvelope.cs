@@ -7,4 +7,6 @@ public sealed record EventEnvelope(
     Guid EventId,
     DateTimeOffset TimestampUtc,
     int UtcOffsetMinutes,
-    string Type);
+    string Type,
+    string? Source = null,
+    Guid? CorrelationId = null);

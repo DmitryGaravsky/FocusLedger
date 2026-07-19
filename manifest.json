@@ -61,8 +61,8 @@
   },
   {
     "path": "docs/data/event-model.md",
-    "bytes": 8762,
-    "sha256": "1841de8a939d32327d34084b428d3950dfcb9e500ea62be6b17a05becb75390d"
+    "bytes": 9278,
+    "sha256": "003d7891f6a1cd237cae0797e6e156b2e8fce5f465c6808d17b97da505544e98"
   },
   {
     "path": "docs/engineering/build-release-and-operations.md",
@@ -106,8 +106,8 @@
   },
   {
     "path": "docs/roadmap.md",
-    "bytes": 18427,
-    "sha256": "2f1bf34a71648caa492ce1f06943130e437873467e71b7c9057f8e6ccf7e643b"
+    "bytes": 18428,
+    "sha256": "c7d406aa24e19cbfe5ea7598edc5f6217bbfdf61ddcc17bc1904896adac4245f"
   },
   {
     "path": "README.md",
