@@ -17,6 +17,9 @@ public static class ActivityEventJsonSerializer {
             OperationalActivityEvent operationalActivityEvent => JsonSerializer.SerializeToUtf8Bytes(
                 operationalActivityEvent,
                 ActivityEventJsonContext.Default.OperationalActivityEvent),
+            TrackingControlActivityEvent trackingControlActivityEvent => JsonSerializer.SerializeToUtf8Bytes(
+                trackingControlActivityEvent,
+                ActivityEventJsonContext.Default.TrackingControlActivityEvent),
             _ => throw new NotSupportedException("The activity event type does not have a registered schema serializer.")
         };
     }
@@ -32,5 +35,8 @@ public static class ActivityEventJsonSerializer {
     }
     public static StateSnapshotActivityEvent? DeserializeStateSnapshot(ReadOnlySpan<byte> utf8Json) {
         return JsonSerializer.Deserialize(utf8Json, ActivityEventJsonContext.Default.StateSnapshotActivityEvent);
+    }
+    public static TrackingControlActivityEvent? DeserializeTrackingControl(ReadOnlySpan<byte> utf8Json) {
+        return JsonSerializer.Deserialize(utf8Json, ActivityEventJsonContext.Default.TrackingControlActivityEvent);
     }
 }

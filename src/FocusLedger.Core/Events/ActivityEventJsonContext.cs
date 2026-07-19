@@ -10,5 +10,6 @@ namespace FocusLedger.Core.Events;
 [JsonSerializable(typeof(DayBoundaryActivityEvent))]
 [JsonSerializable(typeof(StateSnapshotActivityEvent))]
 [JsonSerializable(typeof(OperationalActivityEvent))]
+[JsonSerializable(typeof(TrackingControlActivityEvent))]
 public sealed partial class ActivityEventJsonContext : JsonSerializerContext {
 }

@@ -23,4 +23,7 @@ sealed class MessageLoopApplicationContext : ApplicationContext {
         if(!NativeMethods.PostMessage(messageWindow.Handle, MessageOnlyWindow.ExitMessage, nint.Zero, nint.Zero))
             throw new Win32Exception(Marshal.GetLastPInvokeError());
     }
+    internal bool TryPost(Action action) {
+        return messageWindow.TryPost(action);
+    }
 }

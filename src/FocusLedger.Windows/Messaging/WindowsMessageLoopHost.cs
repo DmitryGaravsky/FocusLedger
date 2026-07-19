@@ -39,6 +39,12 @@ public sealed class WindowsMessageLoopHost : IDisposable {
         ThrowIfDisposed();
         applicationContext.RequestExit();
     }
+    // Schedules bounded UI work without allowing a background operation to touch Windows Forms objects directly.
+    public bool TryPost(Action action) {
+        ArgumentNullException.ThrowIfNull(action);
+        ThrowIfDisposed();
+        return applicationContext.TryPost(action);
+    }
     void ThrowIfDisposed() {
         ObjectDisposedException.ThrowIf(disposed, this);
     }

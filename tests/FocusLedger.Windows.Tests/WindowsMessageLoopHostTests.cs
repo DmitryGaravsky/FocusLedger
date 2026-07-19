@@ -35,6 +35,24 @@ public sealed class WindowsMessageLoopHostTests {
         await loopStopped.Task.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.That(messageLoopThread.Join(TimeSpan.FromSeconds(5)), Is.True);
     }
+    [Test]
+    public async Task PostedActionRunsOnOwningMessageLoopThread() {
+        RecordingMessageHandler messageHandler = new();
+        TaskCompletionSource<WindowsMessageLoopHost> hostReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<bool> loopStopped = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<int> actionThread = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        Thread messageLoopThread = CreateMessageLoopThread(messageHandler, hostReady, loopStopped, CancellationToken.None);
+        messageLoopThread.Start();
+        WindowsMessageLoopHost host = await hostReady.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.That(host.TryPost(() => actionThread.TrySetResult(Environment.CurrentManagedThreadId)), Is.True);
+        int dispatchedThreadId = await actionThread.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        host.RequestExit();
+        await loopStopped.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Multiple(() => {
+            Assert.That(dispatchedThreadId, Is.EqualTo(messageLoopThread.ManagedThreadId));
+            Assert.That(messageLoopThread.Join(TimeSpan.FromSeconds(5)), Is.True);
+        });
+    }
     static Thread CreateMessageLoopThread(
         IWindowMessageHandler messageHandler,
         TaskCompletionSource<WindowsMessageLoopHost> hostReady,

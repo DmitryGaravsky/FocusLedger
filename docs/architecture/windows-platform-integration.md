@@ -15,6 +15,8 @@ No visible window is created during normal operation.
 
 The message-loop host creates one `NativeWindow` whose parent is `HWND_MESSAGE`. It routes selected messages through small synchronous handlers and owns no forms. Shutdown requests post an internal `WM_APP` message, allowing cancellation or another process-lifetime component to exit the loop without blocking or disposing UI resources from a foreign thread.
 
+The same hidden window exposes a bounded queue of at most 64 UI actions. Background command completion posts fixed tray-state updates through this queue; file I/O never runs in a tray click handler and Windows Forms objects are never accessed from a worker thread. A closing or saturated queue rejects new work without growing process memory.
+
 ## 2. Foreground tracking
 
 ### 2.1 Primary signal

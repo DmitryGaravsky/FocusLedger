@@ -85,6 +85,35 @@ public sealed class OperationalEventSession : IAsyncDisposable {
         }
         finally { sessionGate.Release(); }
     }
+    // Atomically persists the user's choice while reserving its matching append-only event sequence.
+    public async ValueTask<TrackingControlActivityEvent?> SetManualPauseAsync(
+        bool paused,
+        DateTimeOffset observedAt,
+        CancellationToken cancellationToken) {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        await sessionGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try {
+            ThrowIfNotInitialized();
+            if(manualPause == paused)
+                return null;
+            long sequence = nextSequence;
+            nextSequence = checked(nextSequence + 1);
+            manualPause = paused;
+            await stateStore.SaveProgressAsync(nextSequence, manualPause, cancellationToken).ConfigureAwait(false);
+            DateTimeOffset timestampUtc = observedAt.ToUniversalTime();
+            int utcOffsetMinutes = checked((int)localTimeZone.GetUtcOffset(timestampUtc.UtcDateTime).TotalMinutes);
+            EventEnvelope envelope = new(
+                1,
+                sequence,
+                Guid.CreateVersion7(),
+                timestampUtc,
+                utcOffsetMinutes,
+                paused ? "tracking.paused" : "tracking.resumed",
+                "manual");
+            return new TrackingControlActivityEvent(envelope);
+        }
+        finally { sessionGate.Release(); }
+    }
     // Marks the run clean only after the caller has drained and flushed the event pipeline.
     public async ValueTask MarkCleanShutdownAsync(CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);

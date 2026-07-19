@@ -121,6 +121,7 @@ public static class CrashTolerantJsonlReader {
                 "foreground.changed" or "foreground.context_changed" => ActivityEventJsonSerializer.DeserializeForeground(utf8Json),
                 "day.started" or "day.ended" => ActivityEventJsonSerializer.DeserializeDayBoundary(utf8Json),
                 "state.snapshot" => ActivityEventJsonSerializer.DeserializeStateSnapshot(utf8Json),
+                "tracking.paused" or "tracking.resumed" => ActivityEventJsonSerializer.DeserializeTrackingControl(utf8Json),
                 _ => null
             };
         }
