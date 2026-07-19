@@ -31,6 +31,10 @@ The daily partition is based on local calendar date at the time of writing. Ever
 - A malformed final line is treated as crash residue and ignored with a data-quality warning.
 - A malformed non-final line is reported and skipped; report output identifies the file and line number without reproducing sensitive content.
 
+`JsonlActivityEventWriter` is the sole append owner for its active file. It opens the stream with `FileShare.Read`, which permits report readers but rejects a second writer, and writes source-generated UTF-8 JSON followed by one LF byte without a BOM. A single asynchronous gate serializes appends, explicit flushes, timer flushes, and disposal.
+
+The default flush interval is supplied by validated configuration and is two seconds. Critical lifecycle, tracking, session, power, meeting, day-end, and snapshot event types bypass the timer and flush immediately after their complete line is appended. Background flush failure makes the writer unavailable through a safe fixed error that does not include the activity-file path. Disposal cancels the timer, performs the final flush, and closes the stream deterministically.
+
 ## 3. Common envelope
 
 Every event contains:
