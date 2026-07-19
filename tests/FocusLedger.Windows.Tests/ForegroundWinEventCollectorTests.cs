@@ -10,6 +10,7 @@ public sealed class ForegroundWinEventCollectorTests {
     const uint ForegroundChangedEvent = 0x0003;
     const uint ObjectNameChangedEvent = 0x800C;
     static readonly DateTimeOffset ObservationTime = new(2026, 7, 19, 10, 30, 0, TimeSpan.Zero);
+    static readonly long[] HookAndReconciledHandles = [500, 501];
     [Test]
     public async Task ForegroundAndSelectedTitleEventsBecomeMinimalSignals() {
         FakeWinEventHookApi hookApi = new() { ForegroundWindow = new nint(101) };
@@ -94,8 +95,63 @@ public sealed class ForegroundWinEventCollectorTests {
         await collectorTask;
         Assert.That(collector.GetMetrics().CallbackFailureCount, Is.EqualTo(1));
     }
-    static ForegroundWinEventCollector CreateCollector(FakeWinEventHookApi hookApi) {
-        return new ForegroundWinEventCollector(new FixedTimeProvider(ObservationTime), new IncrementingMonotonicClock(), hookApi);
+    [Test]
+    public async Task ReconciliationDoesNotDuplicateAcceptedHookObservation() {
+        FakeWinEventHookApi hookApi = new() { ForegroundWindow = new nint(500) };
+        RecordingSignalSink signalSink = new();
+        ForegroundWindowObservationState observationState = new();
+        await using ForegroundWinEventCollector collector = CreateCollector(hookApi, observationState);
+        await using ForegroundReconciliationSampler sampler = CreateSampler(hookApi, observationState);
+        using CancellationTokenSource cancellationSource = new();
+        Task collectorTask = collector.RunAsync(signalSink, cancellationSource.Token);
+        hookApi.Emit(ForegroundChangedEvent, new nint(500), 0, 0);
+        ForegroundPublishResult duplicate = sampler.Reconcile(signalSink);
+        hookApi.ForegroundWindow = new nint(501);
+        ForegroundPublishResult repaired = sampler.Reconcile(signalSink);
+        ForegroundPublishResult repeated = sampler.Reconcile(signalSink);
+        await cancellationSource.CancelAsync();
+        await collectorTask;
+        Assert.Multiple(() => {
+            Assert.That(duplicate, Is.EqualTo(ForegroundPublishResult.Duplicate));
+            Assert.That(repaired, Is.EqualTo(ForegroundPublishResult.Published));
+            Assert.That(repeated, Is.EqualTo(ForegroundPublishResult.Duplicate));
+            Assert.That(signalSink.Signals.Select(signal => ((ForegroundWindowSignal)signal).WindowHandle), Is.EqualTo(HookAndReconciledHandles));
+        });
+    }
+    [Test]
+    public async Task RejectedReconciliationRollsBackForNextTick() {
+        FakeWinEventHookApi hookApi = new() { ForegroundWindow = new nint(600) };
+        RecordingSignalSink signalSink = new() { AcceptSignals = false };
+        ForegroundWindowObservationState observationState = new();
+        await using ForegroundReconciliationSampler sampler = CreateSampler(hookApi, observationState);
+        ForegroundPublishResult rejected = sampler.Reconcile(signalSink);
+        signalSink.AcceptSignals = true;
+        ForegroundPublishResult repaired = sampler.Reconcile(signalSink);
+        Assert.Multiple(() => {
+            Assert.That(rejected, Is.EqualTo(ForegroundPublishResult.Rejected));
+            Assert.That(repaired, Is.EqualTo(ForegroundPublishResult.Published));
+            Assert.That(signalSink.Signals, Has.Count.EqualTo(1));
+            Assert.That(sampler.GetMetrics(), Is.EqualTo(new ForegroundReconciliationMetrics(1, 1)));
+        });
+    }
+    static ForegroundWinEventCollector CreateCollector(
+        FakeWinEventHookApi hookApi,
+        ForegroundWindowObservationState? observationState = null) {
+        return new ForegroundWinEventCollector(
+            new FixedTimeProvider(ObservationTime),
+            new IncrementingMonotonicClock(),
+            observationState ?? new ForegroundWindowObservationState(),
+            hookApi);
+    }
+    static ForegroundReconciliationSampler CreateSampler(
+        FakeWinEventHookApi hookApi,
+        ForegroundWindowObservationState observationState) {
+        return new ForegroundReconciliationSampler(
+            TimeSpan.FromSeconds(1),
+            new FixedTimeProvider(ObservationTime),
+            new IncrementingMonotonicClock(),
+            observationState,
+            hookApi);
     }
     static void AssertSignal(
         ActivitySignal activitySignal,
@@ -128,7 +184,7 @@ public sealed class ForegroundWinEventCollectorTests {
     }
     sealed class RecordingSignalSink : IActivitySignalSink {
         internal List<ActivitySignal> Signals { get; } = [];
-        internal bool AcceptSignals { get; init; } = true;
+        internal bool AcceptSignals { get; set; } = true;
         internal int AsyncWriteCount { get; set; }
         public bool TryWrite(ActivitySignal signal) {
             if(AcceptSignals)
@@ -153,7 +209,7 @@ public sealed class ForegroundWinEventCollectorTests {
         int registrationCount;
         internal int FailedRegistrationNumber { get; init; }
         internal int LastError { get; init; }
-        internal nint ForegroundWindow { get; init; }
+        internal nint ForegroundWindow { get; set; }
         internal List<nint> UnhookedHandles { get; } = [];
         public nint SetHook(uint eventMinimum, uint eventMaximum, WinEventHookCallback callback) {
             registrationCount++;

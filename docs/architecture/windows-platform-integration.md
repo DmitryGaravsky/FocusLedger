@@ -45,6 +45,8 @@ The WinEvent collector performs the first two filters. The serialized downstream
 
 Every second by default, call `GetForegroundWindow` and compare it with coordinator state. Reconciliation repairs missed hooks and startup races. It must not generate duplicate persisted events.
 
+The hook collector and reconciliation sampler share a small atomic source-state containing only the latest opaque HWND. A producer reserves a changed HWND before calling the non-blocking sink. Successful reservations suppress duplicates from either source. Rejected writes roll the reservation back when it is still current, allowing the next sampler tick to repair the missed observation. A zero HWND is treated as temporarily unavailable and produces no foreground-change signal.
+
 ### 2.4 Process metadata
 
 Use `GetWindowThreadProcessId` to identify the owning process. Read only metadata required for application identity. Expected failures include:

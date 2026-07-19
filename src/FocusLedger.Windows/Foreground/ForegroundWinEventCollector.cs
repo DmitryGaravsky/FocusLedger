@@ -18,6 +18,7 @@ public sealed class ForegroundWinEventCollector : IActivitySignalSource {
     const int SelfChildId = 0;
     readonly TimeProvider timeProvider;
     readonly IMonotonicClock monotonicClock;
+    readonly ForegroundWindowObservationState observationState;
     readonly IWinEventHookApi hookApi;
     readonly WinEventHookCallback hookCallback;
     readonly Lock lifecycleLock = new();
@@ -29,18 +30,24 @@ public sealed class ForegroundWinEventCollector : IActivitySignalSource {
     long callbackFailureCount;
     int runStarted;
     bool disposed;
-    public ForegroundWinEventCollector(TimeProvider timeProvider, IMonotonicClock monotonicClock)
-        : this(timeProvider, monotonicClock, WinEventHookApi.Instance) {
+    public ForegroundWinEventCollector(
+        TimeProvider timeProvider,
+        IMonotonicClock monotonicClock,
+        ForegroundWindowObservationState observationState)
+        : this(timeProvider, monotonicClock, observationState, WinEventHookApi.Instance) {
     }
     internal ForegroundWinEventCollector(
         TimeProvider timeProvider,
         IMonotonicClock monotonicClock,
+        ForegroundWindowObservationState observationState,
         IWinEventHookApi hookApi) {
         ArgumentNullException.ThrowIfNull(timeProvider);
         ArgumentNullException.ThrowIfNull(monotonicClock);
+        ArgumentNullException.ThrowIfNull(observationState);
         ArgumentNullException.ThrowIfNull(hookApi);
         this.timeProvider = timeProvider;
         this.monotonicClock = monotonicClock;
+        this.observationState = observationState;
         this.hookApi = hookApi;
         hookCallback = OnWinEvent;
     }
@@ -120,30 +127,36 @@ public sealed class ForegroundWinEventCollector : IActivitySignalSource {
         try {
             if(windowHandle == nint.Zero)
                 return;
+            IActivitySignalSink? targetSignalSink = Volatile.Read(ref signalSink);
+            if(targetSignalSink is null)
+                return;
             if(eventType == ForegroundChangedEvent) {
-                Publish(windowHandle, ForegroundObservationKind.WindowChanged, SignalDelivery.NonDroppable);
+                ForegroundPublishResult result = observationState.TryPublishChange(
+                    windowHandle,
+                    targetSignalSink,
+                    timeProvider,
+                    monotonicClock);
+                if(result == ForegroundPublishResult.Rejected)
+                    Interlocked.Increment(ref rejectedSignalCount);
                 return;
             }
             if(eventType != ObjectNameChangedEvent || objectId != WindowObjectId || childId != SelfChildId)
                 return;
             if(windowHandle != hookApi.GetForegroundWindow())
                 return;
-            Publish(windowHandle, ForegroundObservationKind.TitleChangedCandidate, SignalDelivery.Coalescible);
+            PublishTitleChange(windowHandle, targetSignalSink);
         }
         catch {
             Interlocked.Increment(ref callbackFailureCount);
         }
     }
-    void Publish(nint windowHandle, ForegroundObservationKind kind, SignalDelivery delivery) {
-        IActivitySignalSink? targetSignalSink = Volatile.Read(ref signalSink);
-        if(targetSignalSink is null)
-            return;
+    void PublishTitleChange(nint windowHandle, IActivitySignalSink targetSignalSink) {
         ForegroundWindowSignal signal = new(
             windowHandle.ToInt64(),
-            kind,
+            ForegroundObservationKind.TitleChangedCandidate,
             timeProvider.GetUtcNow(),
             monotonicClock.GetTimestamp(),
-            delivery);
+            SignalDelivery.Coalescible);
         if(!targetSignalSink.TryWrite(signal))
             Interlocked.Increment(ref rejectedSignalCount);
     }

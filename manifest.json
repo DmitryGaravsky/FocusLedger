@@ -51,8 +51,8 @@
   },
   {
     "path": "docs/architecture/windows-platform-integration.md",
-    "bytes": 7839,
-    "sha256": "095c125a4199eec9e6c93d5403c0594e934cbd41b466c08b6208c1ed219cec21"
+    "bytes": 8324,
+    "sha256": "85ce24794bf646ea81302979e9557a6ea51d98f3c4d061fb53b012b6045f8df3"
   },
   {
     "path": "docs/data/configuration.md",
@@ -106,8 +106,8 @@
   },
   {
     "path": "docs/roadmap.md",
-    "bytes": 18422,
-    "sha256": "19839c3d3edf2904369ba16d76452f6d7ba5d89b79ec086d25d1ebde3bc0a789"
+    "bytes": 18423,
+    "sha256": "90f81235d39cf7985009698fd6a1e1db4b6f8e4c9e1f6d2bfff007d32ddd4ea2"
   },
   {
     "path": "README.md",
