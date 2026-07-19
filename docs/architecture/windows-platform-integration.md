@@ -119,6 +119,10 @@ On resume:
 - re-register or verify hooks if needed;
 - reconcile session, idle, foreground, and audio state.
 
+The hidden HWND is explicitly registered through `RegisterSuspendResumeNotification`; relying on an unregistered broadcast is insufficient for a message-only window. Both automatic and user-present resume codes map to one semantic `Resumed` transition, and repeated suspend or resume notifications are suppressed after a successful pipeline write.
+
+Suspend and resume signals are non-droppable. Their serialized consumer is responsible for closing attribution, immediately flushing the future event writer on suspend, and initiating collector reconciliation on resume. The window callback only performs constant-time mapping and a non-blocking signal write. Failed registration, failed unregistration, and rejected writes are measured without stopping other collectors; a rejected transition remains eligible for retry.
+
 ## 6. System tray
 
 ### 6.1 Icon states

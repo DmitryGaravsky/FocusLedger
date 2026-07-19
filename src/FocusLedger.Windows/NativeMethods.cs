@@ -63,4 +63,9 @@ static class NativeMethods {
     [DllImport("wtsapi32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool WTSUnRegisterSessionNotification(nint windowHandle);
+    [DllImport("powrprof.dll", SetLastError = true)]
+    internal static extern nint RegisterSuspendResumeNotification(nint recipient, uint flags);
+    [DllImport("powrprof.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool UnregisterSuspendResumeNotification(nint registrationHandle);
 }

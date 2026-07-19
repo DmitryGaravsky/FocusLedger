@@ -41,3 +41,15 @@ public sealed record SessionActivitySignal(
     SessionActivityKind Activity,
     DateTimeOffset ObservedAt,
     long MonotonicTimestamp) : ActivitySignal(ObservedAt, MonotonicTimestamp, SignalDelivery.NonDroppable);
+
+// Identifies the system-power boundary that controls activity attribution and collector reconciliation.
+public enum SystemPowerActivityKind {
+    Suspending,
+    Resumed
+}
+
+// Carries a critical suspend or resume transition to the serialized coordinator and event writer.
+public sealed record SystemPowerActivitySignal(
+    SystemPowerActivityKind Activity,
+    DateTimeOffset ObservedAt,
+    long MonotonicTimestamp) : ActivitySignal(ObservedAt, MonotonicTimestamp, SignalDelivery.NonDroppable);
