@@ -77,7 +77,7 @@ The user can operate the application entirely through the tray or CLI, run one i
 
 | ID | Feature | Status | Dependencies | Acceptance criteria |
 |---|---|---|---|---|
-| UX-001 | Implement tray icon and state tooltip | Planned | WIN-001, CORE-001, CORE-002 | Active, Idle, Paused, Meeting placeholder, and Error states are represented. |
+| UX-001 | Implement tray icon and state tooltip | Complete | WIN-001, CORE-001, CORE-002 | Active, Idle, Paused, Meeting placeholder, and Error states are represented. |
 | UX-002 | Implement tray command menu | Planned | UX-001 | Pause/resume, folders, config, reload, report placeholders, autostart, and exit behave by state. |
 | OPS-002 | Implement persisted manual pause | Planned | CORE-001, DATA-004, UX-002 | Pause survives restart and attribution remains stopped until explicit resume. |
 | OPS-003 | Implement per-user single instance | Planned | WIN-001 | Second interactive launch does not create another collector. |

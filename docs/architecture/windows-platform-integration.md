@@ -137,6 +137,8 @@ The icon and tooltip must represent:
 
 Meeting may be represented by an overlay or tooltip suffix so it does not hide a persistence error.
 
+The tray presentation resolves simultaneous conditions in the order Error, Meeting, Paused, Idle, and Active. This keeps a persistence failure visible while allowing meeting detection to act as the first implementation's placeholder overlay. The initial implementation uses Windows system icons and privacy-safe fixed tooltips; it never places application or window context in shell-visible text.
+
 ### 6.2 Menu
 
 Initial menu:
