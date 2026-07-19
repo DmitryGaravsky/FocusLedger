@@ -80,6 +80,10 @@ Requirements:
 - pause sampling during system suspend;
 - reconcile immediately after resume/unlock/reconnect.
 
+The detector compares the low 32 bits of `GetTickCount64` with the 32-bit last-input tick using unchecked unsigned arithmetic, preserving correct behavior across tick wrap. When a sample first exceeds the idle threshold, the signal timestamp is backdated to `last input + threshold`; it is not rounded to the later sampling time. The monotonic timestamp records the detection boundary for ordering, while the UTC timestamp records the logical idle transition.
+
+Only Active and Idle semantic transitions are published. Repeated samples are suppressed. A failed platform sample emits no transition and is retried. A rejected non-blocking sink write does not commit detector state, allowing the next sample to retry. No key, button, coordinate, target application, or other input content is observed.
+
 ## 4. Session notifications
 
 Register the hidden window through `WTSRegisterSessionNotification`. Handle at least:

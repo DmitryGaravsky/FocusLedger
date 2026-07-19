@@ -16,3 +16,10 @@ public abstract record ActivitySignal(
         return Equals(other);
     }
 }
+
+// Carries a resolved input-activity transition without collecting any input content or input type.
+public sealed record PresenceActivitySignal(
+    State.PresenceActivityState Activity,
+    TimeSpan IdleThreshold,
+    DateTimeOffset ObservedAt,
+    long MonotonicTimestamp) : ActivitySignal(ObservedAt, MonotonicTimestamp, SignalDelivery.NonDroppable);

@@ -3,6 +3,11 @@
 namespace FocusLedger.Windows;
 
 static class NativeMethods {
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct LastInputInfo {
+        internal uint Size;
+        internal uint Time;
+    }
     [DllImport("user32.dll", EntryPoint = "PostMessageW", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool PostMessage(
@@ -42,4 +47,9 @@ static class NativeMethods {
         [Out] char[] executablePath,
         ref uint size
     );
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool GetLastInputInfo(ref LastInputInfo lastInputInfo);
+    [DllImport("kernel32.dll")]
+    internal static extern ulong GetTickCount64();
 }
