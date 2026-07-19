@@ -56,13 +56,13 @@
   },
   {
     "path": "docs/data/configuration.md",
-    "bytes": 12504,
-    "sha256": "3b6b35df0851f2c27bc23ac5164f14d57959b14b6cbc95e58586f5f7264a3c76"
+    "bytes": 12727,
+    "sha256": "c22a35cecd7f709a0d5eced3d68453b81a91247b8b21563e5cb80bce7ae945f1"
   },
   {
     "path": "docs/data/event-model.md",
-    "bytes": 10105,
-    "sha256": "d038ea08ca57aebf411b2f5bf41944cd11e7755b512edf40ea260e5f0c8f4b19"
+    "bytes": 11016,
+    "sha256": "d5ccaca8f163cd2b6c0ad7f19d1af977bb507128dc8e5f9d39abf50cd4564d6b"
   },
   {
     "path": "docs/engineering/build-release-and-operations.md",
@@ -106,8 +106,8 @@
   },
   {
     "path": "docs/roadmap.md",
-    "bytes": 18429,
-    "sha256": "df32b86ee096ca70cbc7cefe78361e3aa9c2caa7aef2185a431456879f2c07c3"
+    "bytes": 18430,
+    "sha256": "846751cd7706990a92cce1f7be6c8c9325c2bce312d9016326b93b7a783271d7"
   },
   {
     "path": "README.md",

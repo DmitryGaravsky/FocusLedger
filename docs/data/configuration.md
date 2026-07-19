@@ -161,6 +161,8 @@ diagnostics
 }
 ```
 
+When `createYearMonthDirectories` is enabled, daily activity files use one combined calendar folder such as `data/2026-07/activity-2026-07-18.jsonl`. The setting does not create separate year and month directory levels.
+
 ## 4. Validation
 
 Validation failures include:

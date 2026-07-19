@@ -9,9 +9,8 @@
   config.json
   state.json
   data\
-    2026\
-      07\
-        activity-2026-07-18.jsonl
+    2026-07\
+      activity-2026-07-18.jsonl
   reports\
     activity-report-2026-07-18.html
   logs\
@@ -224,6 +223,10 @@ If sequence persistence is damaged, the writer may recover by scanning recent va
 ## 10. Daily rollover
 
 The old file ends with `day.ended`. The new file begins with `day.started` and `state.snapshot`. If the process was not running at midnight, the next start creates the current file without synthesizing events for the gap.
+
+The coordinator creates the rollover triplet before assigning and emitting the triggering activity event, preserving global sequence order. `DailyJsonlActivityEventWriter` strictly routes that pre-sequenced stream: `day.ended` remains in the old file, `day.started` advances to `data/{yyyy-MM}/activity-{yyyy-MM-dd}.jsonl`, and `state.snapshot` must immediately follow in the new file. A date transition without this ordered triplet is rejected rather than silently creating an incomplete daily partition.
+
+The partition date is calculated from `timestampUtc` and the event's persisted `utcOffsetMinutes`, so UTC midnight does not incorrectly split a local day. A restart during an existing local day appends to the existing file without adding another day-start marker. Advancing across multiple dates creates only the current target file and does not synthesize activity for days when the process was not running.
 
 ## 11. Compatibility policy
 

@@ -7,5 +7,7 @@ namespace FocusLedger.Core.Events;
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     GenerationMode = JsonSourceGenerationMode.Default)]
 [JsonSerializable(typeof(ForegroundActivityEvent))]
+[JsonSerializable(typeof(DayBoundaryActivityEvent))]
+[JsonSerializable(typeof(StateSnapshotActivityEvent))]
 public sealed partial class ActivityEventJsonContext : JsonSerializerContext {
 }

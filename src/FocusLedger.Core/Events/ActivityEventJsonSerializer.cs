@@ -6,9 +6,16 @@ namespace FocusLedger.Core.Events;
 public static class ActivityEventJsonSerializer {
     public static byte[] Serialize(ActivityEvent activityEvent) {
         ArgumentNullException.ThrowIfNull(activityEvent);
-        if(activityEvent is ForegroundActivityEvent foregroundActivityEvent)
-            return Serialize(foregroundActivityEvent);
-        throw new NotSupportedException("The activity event type does not have a registered schema serializer.");
+        return activityEvent switch {
+            ForegroundActivityEvent foregroundActivityEvent => Serialize(foregroundActivityEvent),
+            DayBoundaryActivityEvent dayBoundaryActivityEvent => JsonSerializer.SerializeToUtf8Bytes(
+                dayBoundaryActivityEvent,
+                ActivityEventJsonContext.Default.DayBoundaryActivityEvent),
+            StateSnapshotActivityEvent stateSnapshotActivityEvent => JsonSerializer.SerializeToUtf8Bytes(
+                stateSnapshotActivityEvent,
+                ActivityEventJsonContext.Default.StateSnapshotActivityEvent),
+            _ => throw new NotSupportedException("The activity event type does not have a registered schema serializer.")
+        };
     }
     public static byte[] Serialize(ForegroundActivityEvent activityEvent) {
         ArgumentNullException.ThrowIfNull(activityEvent);
