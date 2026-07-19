@@ -3,12 +3,16 @@
 // Owns the shell notification icon and keeps all Windows Forms access on its creating thread.
 public sealed class TrayStatusIndicator : IDisposable {
     readonly NotifyIcon notifyIcon;
+    readonly TrayCommandMenu commandMenu;
     readonly int ownerThreadId;
     bool disposed;
-    public TrayStatusIndicator() {
+    public TrayStatusIndicator(Action<TrayCommand> commandRequested) {
+        ArgumentNullException.ThrowIfNull(commandRequested);
         ownerThreadId = Environment.CurrentManagedThreadId;
+        commandMenu = new TrayCommandMenu(commandRequested);
         notifyIcon = new NotifyIcon();
-        Update(TrayStatus.Active);
+        notifyIcon.ContextMenuStrip = commandMenu.ContextMenu;
+        Update(TrayMenuState.Initial);
         notifyIcon.Visible = true;
     }
     public void Dispose() {
@@ -17,15 +21,22 @@ public sealed class TrayStatusIndicator : IDisposable {
         ThrowIfWrongThread();
         notifyIcon.Visible = false;
         notifyIcon.Dispose();
+        commandMenu.Dispose();
         disposed = true;
     }
     // Replaces the shell presentation atomically from one privacy-safe status snapshot.
     public void Update(TrayStatus status) {
+        Update(new TrayMenuState(status, TrayCommandCapabilities.Exit, false));
+    }
+    // Updates icon, tooltip, command availability, and checked state from one immutable snapshot.
+    public void Update(TrayMenuState state) {
         ObjectDisposedException.ThrowIf(disposed, this);
         ThrowIfWrongThread();
-        TrayPresentation presentation = TrayPresentationResolver.Resolve(status);
+        ArgumentNullException.ThrowIfNull(state);
+        TrayPresentation presentation = TrayPresentationResolver.Resolve(state.Status);
         notifyIcon.Icon = ResolveIcon(presentation.Icon);
         notifyIcon.Text = presentation.Tooltip;
+        commandMenu.Update(state);
     }
     static Icon ResolveIcon(TrayIconKind icon) {
         return icon switch {

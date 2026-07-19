@@ -171,6 +171,8 @@ Exit
 
 Commands that do not apply to the current state are disabled rather than removed.
 
+The fixed menu is capability-driven. The composition root enables an item only after its subsystem supplies a handler; future commands remain visible but disabled. State rules independently make Pause/Resume and Start/End meeting mutually exclusive. The autostart item reflects persisted state with a check mark, and Exit is available from the initial application composition.
+
 ### 6.3 Notifications
 
 Balloon/toast-like notifications are limited to:

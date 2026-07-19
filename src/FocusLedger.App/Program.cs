@@ -7,10 +7,14 @@ static class Program {
     [STAThread]
     static void Main() {
         ApplicationConfiguration.Initialize();
-        using(TrayStatusIndicator trayStatusIndicator = new()) {
-            using(WindowsMessageLoopHost messageLoopHost = new()) {
+        using(WindowsMessageLoopHost messageLoopHost = new()) {
+            using(TrayStatusIndicator trayStatusIndicator = new(command => HandleTrayCommand(command, messageLoopHost))) {
                 messageLoopHost.Run(CancellationToken.None);
             }
         }
+    }
+    static void HandleTrayCommand(TrayCommand command, WindowsMessageLoopHost messageLoopHost) {
+        if(command == TrayCommand.Exit)
+            messageLoopHost.RequestExit();
     }
 }
