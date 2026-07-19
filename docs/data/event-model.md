@@ -241,6 +241,10 @@ Schema 1 readers:
 - validate required envelope fields;
 - expose unsupported schema versions as data-quality errors rather than silently misinterpreting them.
 
+`CrashTolerantJsonlReader` exposes an asynchronous stream of validated envelope records and privacy-safe issue records. It keeps no raw damaged line in its result model. A malformed middle line produces `MalformedEvent` and reading continues; malformed syntax on the final line produces `IncompleteTrailingLine`. Oversized lines, invalid envelopes, invalid known payloads, and unsupported schema versions have distinct enumerated issue kinds.
+
+Unknown event types remain timeline-neutral validated envelopes with no typed payload. Issue locations include a line number and only a canonical `activity-yyyy-MM-dd.jsonl` name; a noncanonical input name is replaced by `activity-file`. Full paths and malformed content are never returned. The reader opens active files with sharing compatible with the single writer and processes one line at a time.
+
 Core event serialization uses generated `System.Text.Json` metadata rather than reflection-based contract discovery. The schema-1 foreground contract has a flattened envelope and typed privacy-safe application, context, and classification payloads. Null optional common fields and absent safe context are omitted. Compatibility tests deserialize the normative fixture, serialize it back to the canonical property set, and verify that additive unknown properties at envelope and nested-payload levels are ignored.
 
 Additive optional fields do not require a schema increment. Renaming/removing fields or changing semantics does.

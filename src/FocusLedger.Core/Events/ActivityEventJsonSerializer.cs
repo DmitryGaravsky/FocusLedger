@@ -24,4 +24,10 @@ public static class ActivityEventJsonSerializer {
     public static ForegroundActivityEvent? DeserializeForeground(ReadOnlySpan<byte> utf8Json) {
         return JsonSerializer.Deserialize(utf8Json, ActivityEventJsonContext.Default.ForegroundActivityEvent);
     }
+    public static DayBoundaryActivityEvent? DeserializeDayBoundary(ReadOnlySpan<byte> utf8Json) {
+        return JsonSerializer.Deserialize(utf8Json, ActivityEventJsonContext.Default.DayBoundaryActivityEvent);
+    }
+    public static StateSnapshotActivityEvent? DeserializeStateSnapshot(ReadOnlySpan<byte> utf8Json) {
+        return JsonSerializer.Deserialize(utf8Json, ActivityEventJsonContext.Default.StateSnapshotActivityEvent);
+    }
 }
