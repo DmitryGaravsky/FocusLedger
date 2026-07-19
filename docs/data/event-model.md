@@ -218,6 +218,10 @@ Heartbeat events should remain compact and need not repeat full foreground conte
 
 `state.json` stores the next sequence number, manual pause state, clean-shutdown marker, and minimal writer metadata. It contains no raw titles or full paths.
 
+The schema-1 state contract contains exactly `schemaVersion`, `nextSequence`, `manualPause`, and `cleanShutdown`. Startup atomically changes `cleanShutdown` to `false` before collectors begin. Graceful shutdown sets it to `true` only after the activity writer has flushed and records the next unused sequence together with the current manual-pause choice.
+
+State updates write a bounded source-generated UTF-8 document to `state.json.tmp`, flush it, and atomically replace `state.json`. A missing file represents a clean first run. A dirty marker represents an unclean previous run. Malformed, oversized, or unsupported state is reset to privacy-safe defaults and reported only through an enumerated recovery result; invalid file content and paths are never copied into an error. Unknown additive properties are ignored.
+
 If sequence persistence is damaged, the writer may recover by scanning recent valid events and selecting a larger next value. Duplicate sequence values across a severe recovery are tolerated by readers when `eventId` differs; `eventId` remains the primary uniqueness key.
 
 ## 10. Daily rollover

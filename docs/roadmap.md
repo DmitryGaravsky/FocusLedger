@@ -64,7 +64,7 @@ FocusLedger can run for a full day, correctly record foreground/presence/session
 | DATA-001 | Define source-generated event serialization | Complete | FND-006 | Schema-1 event fixtures serialize exactly and readers ignore unknown additive properties. |
 | DATA-002 | Implement single JSONL writer | Complete | CORE-003, DATA-001 | One writer appends UTF-8 lines, supports concurrent readers, timed flush, and critical immediate flush. |
 | DATA-003 | Implement daily rollover | Complete | DATA-002 | Local-midnight rollover writes day end/start and a complete state snapshot. |
-| DATA-004 | Implement state file and clean-shutdown marker | Planned | DATA-002 | Sequence, manual pause, and clean shutdown recover without personal data. |
+| DATA-004 | Implement state file and clean-shutdown marker | Complete | DATA-002 | Sequence, manual pause, and clean shutdown recover without personal data. |
 | DATA-005 | Implement crash-tolerant JSONL reader | Planned | DATA-001 | Incomplete trailing line is ignored; malformed middle lines produce safe data-quality errors. |
 | OPS-001 | Add heartbeat and unclean-restart recovery | Planned | DATA-004 | Restart after forced termination emits recovery event and does not invent gap activity. |
 | TEST-001 | Add M1 end-to-end scenario harness | Planned | WIN-002 through DATA-005 | Synthetic foreground, idle, lock, suspend, midnight, and crash scenarios pass. |
