@@ -88,7 +88,7 @@ The user can operate the application entirely through the tray or CLI, run one i
 | WIN-008 | Implement per-user autostart | Complete | UX-002 | Explicit command creates/removes HKCU Run entry and detects moved executable path. |
 | OPS-005 | Implement data/config/report folder commands | Complete | UX-002 | User-commanded shell operations open only known local paths. |
 | OPS-006 | Implement retention maintenance | Complete | CFG-001, DATA-003 | Activity and diagnostics retention runs safely inside storage root. |
-| TEST-002 | Add command/config/autostart integration tests | Planned | OPS-004, CFG-003, WIN-008 | Same-user command, malformed command, invalid config, reload, and registry scenarios pass. |
+| TEST-002 | Add command/config/autostart integration tests | Complete | OPS-004, CFG-003, WIN-008 | Same-user command, malformed command, invalid config, reload, and registry scenarios pass. |
 
 ## 6. M3 — Privacy and classification
 

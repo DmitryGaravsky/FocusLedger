@@ -84,13 +84,43 @@ public sealed class LocalCommandTransportTests {
         Assert.That(handlerCalls, Is.Zero);
     }
     [Test]
+    public async Task UnknownCommandIsRejectedWithoutInvokingHandler() {
+        string pipeName = $"FocusLedger.Tests.{Guid.NewGuid():N}";
+        int handlerCalls = 0;
+        using(CancellationTokenSource cancellationSource = new()) {
+            LocalCommandServer server = new(pipeName, (_, _) => {
+                handlerCalls++;
+                return ValueTask.FromResult(new LocalCommandResult(true, "accepted"));
+            });
+            Task serverTask = server.RunAsync(cancellationSource.Token);
+            using(NamedPipeClientStream pipe = new(
+                ".",
+                pipeName,
+                PipeDirection.InOut,
+                PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly)) {
+                await pipe.ConnectAsync(5000);
+                await LocalCommandServer.WriteBoundedPayloadAsync(
+                    pipe,
+                    "{\"schemaVersion\":1,\"command\":\"not-allowlisted\"}"u8.ToArray(),
+                    CancellationToken.None);
+                await pipe.FlushAsync();
+                byte[] response = await LocalCommandServer.ReadBoundedPayloadAsync(pipe, CancellationToken.None);
+                Assert.That(Encoding.UTF8.GetString(response), Does.Contain("\"status\":\"invalid-command\""));
+            }
+            await cancellationSource.CancelAsync();
+            await serverTask;
+        }
+        Assert.That(handlerCalls, Is.Zero);
+    }
+    [Test]
     public void OversizedFrameIsRejectedBeforeAllocation() {
         byte[] frameLength = new byte[sizeof(int)];
         BinaryPrimitives.WriteInt32LittleEndian(frameLength, 4097);
-        using MemoryStream stream = new(frameLength);
-        Assert.That(
-            async () => await LocalCommandServer.ReadBoundedPayloadAsync(stream, CancellationToken.None),
-            Throws.TypeOf<InvalidDataException>());
+        using(MemoryStream stream = new(frameLength)) {
+            Assert.That(
+                async () => await LocalCommandServer.ReadBoundedPayloadAsync(stream, CancellationToken.None),
+                Throws.TypeOf<InvalidDataException>());
+        }
     }
     [Test]
     public void PipeNameIsStableAndDoesNotExposeIdentity() {

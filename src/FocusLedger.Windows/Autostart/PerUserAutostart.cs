@@ -6,6 +6,7 @@ using Microsoft.Win32;
 public sealed class PerUserAutostart {
     const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
     readonly IAutostartRegistry registry;
+    readonly string runKeyPath;
     readonly string valueName;
     readonly string expectedCommand;
     public PerUserAutostart(string executablePath, string valueName = "FocusLedger", string arguments = "--autostart")
@@ -15,20 +16,30 @@ public sealed class PerUserAutostart {
         IAutostartRegistry registry,
         string executablePath,
         string valueName,
-        string arguments) {
+        string arguments)
+        : this(registry, executablePath, valueName, arguments, RunKeyPath) {
+    }
+    internal PerUserAutostart(
+        IAutostartRegistry registry,
+        string executablePath,
+        string valueName,
+        string arguments,
+        string runKeyPath) {
         this.registry = registry ?? throw new ArgumentNullException(nameof(registry));
         ArgumentException.ThrowIfNullOrWhiteSpace(executablePath);
         ArgumentException.ThrowIfNullOrWhiteSpace(valueName);
         ArgumentException.ThrowIfNullOrWhiteSpace(arguments);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runKeyPath);
         if(!Path.IsPathFullyQualified(executablePath))
             throw new ArgumentException("The executable path must be fully qualified.", nameof(executablePath));
         if(executablePath.Contains('"', StringComparison.Ordinal))
             throw new ArgumentException("The executable path contains an unsupported character.", nameof(executablePath));
         this.valueName = valueName;
+        this.runKeyPath = runKeyPath;
         expectedCommand = $"\"{executablePath}\" {arguments}";
     }
     public AutostartState GetState() {
-        string? configuredCommand = registry.Read(RunKeyPath, valueName);
+        string? configuredCommand = registry.Read(runKeyPath, valueName);
         if(configuredCommand is null)
             return AutostartState.Disabled;
         return string.Equals(configuredCommand, expectedCommand, StringComparison.OrdinalIgnoreCase)
@@ -36,11 +47,11 @@ public sealed class PerUserAutostart {
             : AutostartState.InvalidPath;
     }
     public AutostartState Enable() {
-        registry.Write(RunKeyPath, valueName, expectedCommand);
+        registry.Write(runKeyPath, valueName, expectedCommand);
         return AutostartState.Enabled;
     }
     public AutostartState Disable() {
-        registry.Delete(RunKeyPath, valueName);
+        registry.Delete(runKeyPath, valueName);
         return AutostartState.Disabled;
     }
 }

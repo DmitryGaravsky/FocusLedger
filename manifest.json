@@ -71,8 +71,8 @@
   },
   {
     "path": "docs/engineering/testing-and-quality.md",
-    "bytes": 6451,
-    "sha256": "42325784a42e7fb92b59f4e16c298cb8147b9cf6c17f5b7b789b7f0a646da9d1"
+    "bytes": 7114,
+    "sha256": "e3dbb12833e7c99ad612a90582f95893b8034eac810ecb700936bc9dcf1eb423"
   },
   {
     "path": "docs/features/activity-classification.md",
@@ -106,8 +106,8 @@
   },
   {
     "path": "docs/roadmap.md",
-    "bytes": 18445,
-    "sha256": "424c1c181fc37bf868157db85de4ed715124672f5fbfe5dede0fb0a4c09b3d49"
+    "bytes": 18446,
+    "sha256": "b1674d897a89637f40ab86871b2cb0b22cb1661436c887800c4e0591df0bdad6"
   },
   {
     "path": "README.md",

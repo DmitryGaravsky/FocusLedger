@@ -91,6 +91,51 @@ public sealed class ConfigurationManagerTests {
         }
         finally { Directory.Delete(rootPath, true); }
     }
+    [Test]
+    public async Task WatcherKeepsValidSnapshotAfterInvalidChangeAndAcceptsRepair() {
+        string rootPath = CreateRootPath();
+        try {
+            string configurationPath = Path.Combine(rootPath, "config.json");
+            await using(ConfigurationManager manager = CreateManager(configurationPath)) {
+                await manager.InitializeAsync(CancellationToken.None);
+                FocusLedgerConfiguration initial = manager.Current;
+                using(CancellationTokenSource cancellationSource = new(TimeSpan.FromSeconds(10))) {
+                    TaskCompletionSource<ConfigurationReloadResult> invalidReceived = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                    TaskCompletionSource<ConfigurationReloadResult> repairedReceived = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                    Task watcherTask = manager.RunAsync((result, _) => {
+                        if(result.Status == ConfigurationReloadStatus.Invalid)
+                            invalidReceived.TrySetResult(result);
+                        if(result.Status == ConfigurationReloadStatus.Reloaded
+                            && manager.Current.Tracking.IdleThresholdSeconds == 420) {
+                            repairedReceived.TrySetResult(result);
+                        }
+                        return ValueTask.CompletedTask;
+                    }, cancellationSource.Token);
+                    FocusLedgerConfiguration invalid = initial with {
+                        Privacy = initial.Privacy with { PersistUrls = true }
+                    };
+                    await File.WriteAllBytesAsync(configurationPath, ConfigurationSerializer.Serialize(invalid));
+                    ConfigurationReloadResult invalidResult = await invalidReceived.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                    Assert.Multiple(() => {
+                        Assert.That(invalidResult.Status, Is.EqualTo(ConfigurationReloadStatus.Invalid));
+                        Assert.That(manager.Current, Is.SameAs(initial));
+                    });
+                    FocusLedgerConfiguration repaired = initial with {
+                        Tracking = initial.Tracking with { IdleThresholdSeconds = 420 }
+                    };
+                    await File.WriteAllBytesAsync(configurationPath, ConfigurationSerializer.Serialize(repaired));
+                    ConfigurationReloadResult repairedResult = await repairedReceived.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                    await cancellationSource.CancelAsync();
+                    Assert.ThrowsAsync<OperationCanceledException>(async () => await watcherTask);
+                    Assert.Multiple(() => {
+                        Assert.That(repairedResult.Status, Is.EqualTo(ConfigurationReloadStatus.Reloaded));
+                        Assert.That(manager.Current.Tracking.IdleThresholdSeconds, Is.EqualTo(420));
+                    });
+                }
+            }
+        }
+        finally { Directory.Delete(rootPath, true); }
+    }
     static ConfigurationManager CreateManager(string configurationPath) {
         return new ConfigurationManager(configurationPath, new ConfigurationValidator(), TimeProvider.System, TimeSpan.FromMilliseconds(50));
     }

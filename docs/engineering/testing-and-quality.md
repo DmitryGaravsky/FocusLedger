@@ -59,6 +59,8 @@ All automated test projects use NUnit. NuGet package versions are managed centra
 - safe handling of invalid/stale HWND and PID;
 - process access denied;
 - Core Audio enumeration abstraction;
+
+The M2 integration suite sends every allowlisted command through a real `PipeOptions.CurrentUserOnly` server/client pair and verifies that malformed JSON and unknown commands are rejected before application handlers run. Configuration watcher tests exercise invalid privacy settings followed by an in-place valid repair while confirming that the last valid immutable snapshot remains active. Autostart creation, stale-path detection, and removal use the production managed registry adapter under a unique temporary HKCU subtree; the suite never reads or writes the user's actual `CurrentVersion\Run` entry and removes the complete isolated subtree in cleanup.
 - deterministic disposal of hooks and COM objects.
 
 Tests that require an interactive desktop must be clearly tagged and runnable on a dedicated Windows test environment.
