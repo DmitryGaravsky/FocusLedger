@@ -11,6 +11,8 @@ public sealed class LocalCommandTransportTests {
     [TestCase("--resume", LocalCommandKind.Resume)]
     [TestCase("--enable-startup", LocalCommandKind.EnableStartup)]
     [TestCase("--disable-startup", LocalCommandKind.DisableStartup)]
+    [TestCase("--open-config", LocalCommandKind.OpenConfiguration)]
+    [TestCase("--open-data", LocalCommandKind.OpenDataFolder)]
     [TestCase("--quit", LocalCommandKind.Quit)]
     public void CommandLineParsesSupportedCommand(string argument, LocalCommandKind expected) {
         Assert.That(LocalCommandLine.TryParse([argument], out LocalCommandKind? command), Is.True);
@@ -26,6 +28,8 @@ public sealed class LocalCommandTransportTests {
     [TestCase(LocalCommandKind.Resume)]
     [TestCase(LocalCommandKind.EnableStartup)]
     [TestCase(LocalCommandKind.DisableStartup)]
+    [TestCase(LocalCommandKind.OpenConfiguration)]
+    [TestCase(LocalCommandKind.OpenDataFolder)]
     [TestCase(LocalCommandKind.Quit)]
     public async Task SameUserClientReceivesAcknowledgement(LocalCommandKind command) {
         string pipeName = $"FocusLedger.Tests.{Guid.NewGuid():N}";

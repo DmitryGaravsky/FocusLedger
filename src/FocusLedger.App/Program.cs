@@ -1,6 +1,7 @@
 ﻿using FocusLedger.Windows.Autostart;
 using FocusLedger.Windows.Commands;
 using FocusLedger.Windows.Messaging;
+using FocusLedger.Windows.Shell;
 using FocusLedger.Windows.SingleInstance;
 using FocusLedger.Windows.Tray;
 
@@ -31,8 +32,9 @@ static class Program {
                     runtime.Configuration.Startup.RegistryValueName,
                     runtime.Configuration.Startup.Arguments);
                 AutostartState autostartState = autostart.GetState();
+                KnownLocalPathLauncher pathLauncher = new(StorageRootPath);
                 TaskCompletionSource<AppTrayCommandDispatcher> dispatcherReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
-                Task applicationTask = RunStaApplicationAsync(runtime, autostart, autostartState, dispatcherReady);
+                Task applicationTask = RunStaApplicationAsync(runtime, autostart, pathLauncher, autostartState, dispatcherReady);
                 AppTrayCommandDispatcher dispatcher = await dispatcherReady.Task
                     .ConfigureAwait(false);
                 using(CancellationTokenSource commandServerCancellation = new()) {
@@ -75,10 +77,11 @@ static class Program {
     static Task RunStaApplicationAsync(
         FocusLedgerRuntime runtime,
         PerUserAutostart autostart,
+        KnownLocalPathLauncher pathLauncher,
         AutostartState autostartState,
         TaskCompletionSource<AppTrayCommandDispatcher> dispatcherReady) {
         TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        Thread applicationThread = new(() => RunStaApplication(runtime, autostart, autostartState, dispatcherReady, completion)) {
+        Thread applicationThread = new(() => RunStaApplication(runtime, autostart, pathLauncher, autostartState, dispatcherReady, completion)) {
             IsBackground = false,
             Name = "FocusLedger.Application"
         };
@@ -89,13 +92,14 @@ static class Program {
     static void RunStaApplication(
         FocusLedgerRuntime runtime,
         PerUserAutostart autostart,
+        KnownLocalPathLauncher pathLauncher,
         AutostartState autostartState,
         TaskCompletionSource<AppTrayCommandDispatcher> dispatcherReady,
         TaskCompletionSource completion) {
         try {
             ApplicationConfiguration.Initialize();
             using(WindowsMessageLoopHost messageLoopHost = new()) {
-                AppTrayCommandDispatcher dispatcher = new(runtime, messageLoopHost, autostart, autostartState);
+                AppTrayCommandDispatcher dispatcher = new(runtime, messageLoopHost, autostart, pathLauncher, autostartState);
                 using(TrayStatusIndicator trayStatusIndicator = new(dispatcher.Handle)) {
                     dispatcher.Attach(trayStatusIndicator);
                     dispatcherReady.TrySetResult(dispatcher);

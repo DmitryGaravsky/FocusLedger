@@ -83,10 +83,13 @@ public sealed class LocalCommandServer {
             "resume" => LocalCommandKind.Resume,
             "enable-startup" => LocalCommandKind.EnableStartup,
             "disable-startup" => LocalCommandKind.DisableStartup,
+            "open-configuration" => LocalCommandKind.OpenConfiguration,
+            "open-data-folder" => LocalCommandKind.OpenDataFolder,
             "quit" => LocalCommandKind.Quit,
             _ => default
         };
-        return value is "status" or "pause" or "resume" or "enable-startup" or "disable-startup" or "quit";
+        return value is "status" or "pause" or "resume" or "enable-startup" or "disable-startup"
+            or "open-configuration" or "open-data-folder" or "quit";
     }
     internal static async ValueTask<byte[]> ReadBoundedPayloadAsync(Stream stream, CancellationToken cancellationToken) {
         byte[] lengthBytes = new byte[sizeof(int)];
@@ -170,6 +173,8 @@ public sealed class LocalCommandClient {
             LocalCommandKind.Resume => "resume",
             LocalCommandKind.EnableStartup => "enable-startup",
             LocalCommandKind.DisableStartup => "disable-startup",
+            LocalCommandKind.OpenConfiguration => "open-configuration",
+            LocalCommandKind.OpenDataFolder => "open-data-folder",
             LocalCommandKind.Quit => "quit",
             _ => throw new ArgumentOutOfRangeException(nameof(command), command, "Unknown local command.")
         };

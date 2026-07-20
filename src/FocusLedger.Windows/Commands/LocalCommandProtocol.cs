@@ -9,6 +9,8 @@ public enum LocalCommandKind {
     Resume,
     EnableStartup,
     DisableStartup,
+    OpenConfiguration,
+    OpenDataFolder,
     Quit
 }
 
@@ -39,6 +41,8 @@ public static class LocalCommandLine {
             "--resume" => LocalCommandKind.Resume,
             "--enable-startup" => LocalCommandKind.EnableStartup,
             "--disable-startup" => LocalCommandKind.DisableStartup,
+            "--open-config" => LocalCommandKind.OpenConfiguration,
+            "--open-data" => LocalCommandKind.OpenDataFolder,
             "--quit" => LocalCommandKind.Quit,
             _ => null
         };

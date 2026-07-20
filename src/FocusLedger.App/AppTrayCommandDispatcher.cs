@@ -4,17 +4,22 @@ using FocusLedger.Core.State;
 using FocusLedger.Windows.Autostart;
 using FocusLedger.Windows.Commands;
 using FocusLedger.Windows.Messaging;
+using FocusLedger.Windows.Shell;
 using FocusLedger.Windows.Tray;
 
 // Keeps asynchronous command execution off the Windows message-loop thread and marshals presentation updates back.
 sealed class AppTrayCommandDispatcher {
     const TrayCommandCapabilities Capabilities = TrayCommandCapabilities.PauseTracking
         | TrayCommandCapabilities.ResumeTracking
+        | TrayCommandCapabilities.OpenReportsFolder
+        | TrayCommandCapabilities.OpenDataFolder
+        | TrayCommandCapabilities.OpenConfiguration
         | TrayCommandCapabilities.ToggleAutostart
         | TrayCommandCapabilities.Exit;
     readonly FocusLedgerRuntime runtime;
     readonly WindowsMessageLoopHost messageLoopHost;
     readonly PerUserAutostart autostart;
+    readonly KnownLocalPathLauncher pathLauncher;
     TrayStatusIndicator? trayStatusIndicator;
     AutostartState autostartState;
     bool hasConfigurationError;
@@ -23,10 +28,12 @@ sealed class AppTrayCommandDispatcher {
         FocusLedgerRuntime runtime,
         WindowsMessageLoopHost messageLoopHost,
         PerUserAutostart autostart,
+        KnownLocalPathLauncher pathLauncher,
         AutostartState autostartState) {
         this.runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
         this.messageLoopHost = messageLoopHost ?? throw new ArgumentNullException(nameof(messageLoopHost));
         this.autostart = autostart ?? throw new ArgumentNullException(nameof(autostart));
+        this.pathLauncher = pathLauncher ?? throw new ArgumentNullException(nameof(pathLauncher));
         this.autostartState = autostartState;
         hasConfigurationError = runtime.HasConfigurationError;
     }
@@ -53,6 +60,18 @@ sealed class AppTrayCommandDispatcher {
             _ = HandleTrayCommandAsync(localCommand);
             return;
         }
+        if(command == TrayCommand.OpenReportsFolder) {
+            _ = HandleTrayPathCommandAsync(KnownLocalPath.ReportsFolder);
+            return;
+        }
+        if(command == TrayCommand.OpenDataFolder) {
+            _ = HandleTrayCommandAsync(LocalCommandKind.OpenDataFolder);
+            return;
+        }
+        if(command == TrayCommand.OpenConfiguration) {
+            _ = HandleTrayCommandAsync(LocalCommandKind.OpenConfiguration);
+            return;
+        }
         if(command == TrayCommand.Exit)
             _ = HandleTrayCommandAsync(LocalCommandKind.Quit);
     }
@@ -67,6 +86,13 @@ sealed class AppTrayCommandDispatcher {
         if(command is LocalCommandKind.EnableStartup or LocalCommandKind.DisableStartup)
             return await SetAutostartAsync(command, cancellationToken)
                 .ConfigureAwait(false);
+        if(command is LocalCommandKind.OpenConfiguration or LocalCommandKind.OpenDataFolder) {
+            KnownLocalPath target = command == LocalCommandKind.OpenConfiguration
+                ? KnownLocalPath.Configuration
+                : KnownLocalPath.DataFolder;
+            return await OpenPathAsync(target, cancellationToken)
+                .ConfigureAwait(false);
+        }
         bool paused = command == LocalCommandKind.Pause;
         try {
             TrackerLifecycleState state = await runtime.SetPausedAsync(paused, cancellationToken)
@@ -100,6 +126,18 @@ sealed class AppTrayCommandDispatcher {
             return new LocalCommandResult(false, "error");
         }
     }
+    async ValueTask<LocalCommandResult> OpenPathAsync(KnownLocalPath target, CancellationToken cancellationToken) {
+        try {
+            await Task.Run(() => pathLauncher.Open(target), cancellationToken)
+                .ConfigureAwait(false);
+            return new LocalCommandResult(true, "opened");
+        }
+        catch(Exception exception)
+            when(exception is IOException or UnauthorizedAccessException or InvalidOperationException or System.ComponentModel.Win32Exception) {
+            PostState(CreateMenuState(runtime.State, true));
+            return new LocalCommandResult(false, "error");
+        }
+    }
     async ValueTask<LocalCommandResult> StopAsync(CancellationToken cancellationToken) {
         if(Interlocked.Exchange(ref stopping, 1) != 0)
             return new LocalCommandResult(true, "stopping");
@@ -125,6 +163,10 @@ sealed class AppTrayCommandDispatcher {
         if(result.AfterAcknowledgement is not null)
             await result.AfterAcknowledgement()
                 .ConfigureAwait(false);
+    }
+    async Task HandleTrayPathCommandAsync(KnownLocalPath target) {
+        await OpenPathAsync(target, CancellationToken.None)
+            .ConfigureAwait(false);
     }
     void PostState(TrayMenuState state) {
         TryPost(() => trayStatusIndicator!.Update(state));

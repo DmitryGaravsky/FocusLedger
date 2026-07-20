@@ -177,6 +177,8 @@ Commands that do not apply to the current state are disabled rather than removed
 
 The fixed menu is capability-driven. The composition root enables an item only after its subsystem supplies a handler; future commands remain visible but disabled. State rules independently make Pause/Resume and Start/End meeting mutually exclusive. The autostart item reflects persisted state with a check mark, and Exit is available from the initial application composition.
 
+Data, reports, and configuration shell operations receive no caller-supplied path. The Windows adapter derives each target from the resolved application storage root, creates a missing data or reports directory, and passes the resulting local path directly to Windows shell execution. The operations run away from the message-loop thread and are available only from an explicit tray command or the allowlisted `--open-data` and `--open-config` CLI commands.
+
 ### 6.3 Notifications
 
 Balloon/toast-like notifications are limited to:
@@ -203,7 +205,7 @@ Requirements:
 - malformed commands do not crash the primary process;
 - no TCP or HTTP listener is used.
 
-Schema 1 uses a four-byte little-endian payload length followed by at most 4096 UTF-8 JSON bytes. Each connection carries one request and one acknowledgement. The pipe is created with `PipeOptions.CurrentUserOnly`; both its name and the singleton mutex name use SID-derived hashes. The command allowlist is `status`, `pause`, `resume`, `enable-startup`, `disable-startup`, and `quit`. Unknown schema versions, unknown commands, malformed JSON, truncated frames, and oversized frames are rejected without invoking an application handler.
+Schema 1 uses a four-byte little-endian payload length followed by at most 4096 UTF-8 JSON bytes. Each connection carries one request and one acknowledgement. The pipe is created with `PipeOptions.CurrentUserOnly`; both its name and the singleton mutex name use SID-derived hashes. The command allowlist is `status`, `pause`, `resume`, `enable-startup`, `disable-startup`, `open-configuration`, `open-data-folder`, and `quit`. Unknown schema versions, unknown commands, malformed JSON, truncated frames, and oversized frames are rejected without invoking an application handler.
 
 ## 8. Autostart
 
