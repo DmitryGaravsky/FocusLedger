@@ -41,8 +41,8 @@
   },
   {
     "path": "docs/architecture/overview.md",
-    "bytes": 9255,
-    "sha256": "476bdb41db758a0958296b54462ee2cc626a8680a70eea71047a4da52fd7312d"
+    "bytes": 9796,
+    "sha256": "a9159ff4fa7f77981ca3ffaae7a3640357ab466e3b63fa1d76e914d0189c8207"
   },
   {
     "path": "docs/architecture/runtime-state-machine.md",
@@ -91,8 +91,8 @@
   },
   {
     "path": "docs/product/privacy-and-data-policy.md",
-    "bytes": 7265,
-    "sha256": "75c2c329971822d3a026f710780814e864cb2290adc4176f8d4f8adf9732e053"
+    "bytes": 8053,
+    "sha256": "506a5fce1b6656aaca876b7237ff0f6e1d12f6b2fb6cc0f7c483284b0d41cf9b"
   },
   {
     "path": "docs/product/requirements.md",
@@ -106,8 +106,8 @@
   },
   {
     "path": "docs/roadmap.md",
-    "bytes": 18444,
-    "sha256": "ed6d81a10bdd22b4126898b9252bd28927bbed55f3a9e438890de72d8b437395"
+    "bytes": 18445,
+    "sha256": "424c1c181fc37bf868157db85de4ed715124672f5fbfe5dede0fb0a4c09b3d49"
   },
   {
     "path": "README.md",

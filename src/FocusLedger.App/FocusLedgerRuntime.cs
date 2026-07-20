@@ -15,6 +15,7 @@ sealed class FocusLedgerRuntime : IAsyncDisposable {
     readonly ManualPauseController pauseController;
     readonly ConfigurationManager configurationManager;
     readonly TimeProvider timeProvider;
+    readonly string storageRootPath;
     readonly string dataRootPath;
     readonly SemaphoreSlim operationGate = new(1, 1);
     bool initialized;
@@ -26,6 +27,7 @@ sealed class FocusLedgerRuntime : IAsyncDisposable {
         ArgumentNullException.ThrowIfNull(timeProvider);
         string resolvedRootPath = Path.GetFullPath(storageRootPath);
         this.timeProvider = timeProvider;
+        this.storageRootPath = resolvedRootPath;
         dataRootPath = Path.Combine(resolvedRootPath, "data");
         OperationalStateStore stateStore = new(Path.Combine(resolvedRootPath, "state.json"));
         eventSession = new OperationalEventSession(stateStore, timeProvider.LocalTimeZone);
@@ -73,9 +75,17 @@ sealed class FocusLedgerRuntime : IAsyncDisposable {
             ConfigurationReloadResult configurationResult = await configurationManager.InitializeAsync(cancellationToken)
                 .ConfigureAwait(false);
             UpdateConfigurationError(configurationResult);
+            DateTimeOffset observedAt = timeProvider.GetLocalNow();
+            FocusLedgerConfiguration configuration = configurationManager.Current;
+            RetentionMaintenance retentionMaintenance = new(storageRootPath);
+            await Task.Run(() => retentionMaintenance.Run(
+                DateOnly.FromDateTime(observedAt.DateTime),
+                configuration.Storage.ActivityRetentionDays,
+                configuration.Diagnostics.RetentionDays,
+                cancellationToken), cancellationToken)
+                .ConfigureAwait(false);
             ManualPauseInitialization initialization = await pauseController.InitializeAsync(cancellationToken)
                 .ConfigureAwait(false);
-            DateTimeOffset observedAt = timeProvider.GetLocalNow();
             if(!CurrentActivityFileHasEvents(observedAt))
                 await WriteInitialDayBoundaryAsync(observedAt, cancellationToken).ConfigureAwait(false);
             await AppendOperationalEventAsync(OperationalActivitySignalKind.TrackerStarted, observedAt, cancellationToken).ConfigureAwait(false);

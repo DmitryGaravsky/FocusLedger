@@ -202,6 +202,8 @@ Default retention:
 - diagnostics: 14 days;
 - reports: no automatic deletion in 1.0 unless a future configurable policy is implemented.
 
+Retention maintenance runs during startup after a valid configuration snapshot is available and before the current daily writer is opened. A retention value of `N` preserves the current local calendar day and the preceding `N - 1` calendar days. Cleanup recognizes only canonical `activity-YYYY-MM-DD.jsonl` files in their matching `data\YYYY-MM` partition and canonical `diagnostic-YYYY-MM-DD.log` files directly under `logs`; unknown, misplaced, report, configuration, and state files are never deleted. Reparse-point roots and month directories are skipped so cleanup cannot follow a link outside the storage root. An inaccessible or undeletable file is counted as a safe maintenance failure and does not prevent other eligible files from being processed or stop activity tracking.
+
 Files are not encrypted by default. The privacy model relies on data minimization and the Windows user-profile access boundary. Users can delete data by deleting files. A future encryption feature must not prevent local report generation or reliable recovery without an explicit key-management design.
 
 ## 9. Network prohibition

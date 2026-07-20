@@ -222,6 +222,8 @@ Foreground, presence, pause, session, and power tracking are critical. The follo
 - report generation;
 - retention cleanup.
 
+Retention cleanup is a best-effort startup operation driven by the active immutable configuration. It compares dates encoded in canonical FocusLedger filenames rather than mutable filesystem timestamps, does not recurse through arbitrary directories, and refuses to traverse reparse points. Activity and diagnostic policies are evaluated independently; reports remain outside automatic retention for the first stable release. Expected filesystem failures are isolated per directory or file and contain no path in persisted activity data.
+
 ### 7.2 Circuit breakers
 
 Cross-process or COM integrations SHOULD use a per-adapter circuit breaker. After repeated failures, the adapter is disabled for a cooldown period and tracking falls back to simpler signals.
