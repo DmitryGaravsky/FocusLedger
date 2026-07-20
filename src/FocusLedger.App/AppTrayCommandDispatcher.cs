@@ -1,6 +1,7 @@
 ﻿namespace FocusLedger.App;
 
 using FocusLedger.Core.State;
+using FocusLedger.Windows.Autostart;
 using FocusLedger.Windows.Commands;
 using FocusLedger.Windows.Messaging;
 using FocusLedger.Windows.Tray;
@@ -9,21 +10,32 @@ using FocusLedger.Windows.Tray;
 sealed class AppTrayCommandDispatcher {
     const TrayCommandCapabilities Capabilities = TrayCommandCapabilities.PauseTracking
         | TrayCommandCapabilities.ResumeTracking
+        | TrayCommandCapabilities.ToggleAutostart
         | TrayCommandCapabilities.Exit;
     readonly FocusLedgerRuntime runtime;
     readonly WindowsMessageLoopHost messageLoopHost;
+    readonly PerUserAutostart autostart;
     TrayStatusIndicator? trayStatusIndicator;
+    AutostartState autostartState;
+    bool hasConfigurationError;
     int stopping;
-    public AppTrayCommandDispatcher(FocusLedgerRuntime runtime, WindowsMessageLoopHost messageLoopHost) {
+    public AppTrayCommandDispatcher(
+        FocusLedgerRuntime runtime,
+        WindowsMessageLoopHost messageLoopHost,
+        PerUserAutostart autostart,
+        AutostartState autostartState) {
         this.runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
         this.messageLoopHost = messageLoopHost ?? throw new ArgumentNullException(nameof(messageLoopHost));
+        this.autostart = autostart ?? throw new ArgumentNullException(nameof(autostart));
+        this.autostartState = autostartState;
+        hasConfigurationError = runtime.HasConfigurationError;
     }
     public void Attach(TrayStatusIndicator indicator) {
         ArgumentNullException.ThrowIfNull(indicator);
         if(trayStatusIndicator is not null)
             throw new InvalidOperationException("The tray status indicator is already attached.");
         trayStatusIndicator = indicator;
-        indicator.Update(CreateMenuState(runtime.State, runtime.HasConfigurationError));
+        indicator.Update(CreateMenuState(runtime.State));
     }
     public void Handle(TrayCommand command) {
         if(command == TrayCommand.PauseTracking) {
@@ -32,6 +44,13 @@ sealed class AppTrayCommandDispatcher {
         }
         if(command == TrayCommand.ResumeTracking) {
             _ = HandleTrayCommandAsync(LocalCommandKind.Resume);
+            return;
+        }
+        if(command == TrayCommand.ToggleAutostart) {
+            LocalCommandKind localCommand = autostartState == AutostartState.Enabled
+                ? LocalCommandKind.DisableStartup
+                : LocalCommandKind.EnableStartup;
+            _ = HandleTrayCommandAsync(localCommand);
             return;
         }
         if(command == TrayCommand.Exit)
@@ -45,11 +64,14 @@ sealed class AppTrayCommandDispatcher {
         if(command == LocalCommandKind.Quit)
             return await StopAsync(cancellationToken)
                 .ConfigureAwait(false);
+        if(command is LocalCommandKind.EnableStartup or LocalCommandKind.DisableStartup)
+            return await SetAutostartAsync(command, cancellationToken)
+                .ConfigureAwait(false);
         bool paused = command == LocalCommandKind.Pause;
         try {
             TrackerLifecycleState state = await runtime.SetPausedAsync(paused, cancellationToken)
                 .ConfigureAwait(false);
-            PostState(CreateMenuState(state, false));
+            PostState(CreateMenuState(state));
             return new LocalCommandResult(true, GetStatusName(state));
         }
         catch {
@@ -59,8 +81,24 @@ sealed class AppTrayCommandDispatcher {
     }
     public ValueTask HandleConfigurationStateAsync(bool hasError, CancellationToken cancellationToken) {
         cancellationToken.ThrowIfCancellationRequested();
-        PostState(CreateMenuState(runtime.State, hasError));
+        hasConfigurationError = hasError;
+        PostState(CreateMenuState(runtime.State));
         return ValueTask.CompletedTask;
+    }
+    async ValueTask<LocalCommandResult> SetAutostartAsync(LocalCommandKind command, CancellationToken cancellationToken) {
+        try {
+            autostartState = await Task.Run(
+                () => command == LocalCommandKind.EnableStartup ? autostart.Enable() : autostart.Disable(),
+                cancellationToken)
+                .ConfigureAwait(false);
+            PostState(CreateMenuState(runtime.State));
+            return new LocalCommandResult(true, autostartState == AutostartState.Enabled ? "startup-enabled" : "startup-disabled");
+        }
+        catch(Exception exception)
+            when(exception is IOException or UnauthorizedAccessException or System.Security.SecurityException) {
+            PostState(CreateMenuState(runtime.State, true));
+            return new LocalCommandResult(false, "error");
+        }
     }
     async ValueTask<LocalCommandResult> StopAsync(CancellationToken cancellationToken) {
         if(Interlocked.Exchange(ref stopping, 1) != 0)
@@ -95,9 +133,10 @@ sealed class AppTrayCommandDispatcher {
         try { return messageLoopHost.TryPost(action); }
         catch(ObjectDisposedException) { return false; }
     }
-    static TrayMenuState CreateMenuState(TrackerLifecycleState state, bool hasError) {
+    TrayMenuState CreateMenuState(TrackerLifecycleState state, bool operationError = false) {
         TrayActivityState activity = state == TrackerLifecycleState.Paused ? TrayActivityState.Paused : TrayActivityState.Active;
-        return new TrayMenuState(new TrayStatus(activity, false, hasError), Capabilities, false);
+        bool hasError = operationError || hasConfigurationError || autostartState == AutostartState.InvalidPath;
+        return new TrayMenuState(new TrayStatus(activity, false, hasError), Capabilities, autostartState == AutostartState.Enabled);
     }
     static string GetStatusName(TrackerLifecycleState state) {
         return state switch {

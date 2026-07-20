@@ -203,7 +203,7 @@ Requirements:
 - malformed commands do not crash the primary process;
 - no TCP or HTTP listener is used.
 
-Schema 1 uses a four-byte little-endian payload length followed by at most 4096 UTF-8 JSON bytes. Each connection carries one request and one acknowledgement. The pipe is created with `PipeOptions.CurrentUserOnly`; both its name and the singleton mutex name use SID-derived hashes. The initial command allowlist is `status`, `pause`, `resume`, and `quit`. Unknown schema versions, unknown commands, malformed JSON, truncated frames, and oversized frames are rejected without invoking an application handler.
+Schema 1 uses a four-byte little-endian payload length followed by at most 4096 UTF-8 JSON bytes. Each connection carries one request and one acknowledgement. The pipe is created with `PipeOptions.CurrentUserOnly`; both its name and the singleton mutex name use SID-derived hashes. The command allowlist is `status`, `pause`, `resume`, `enable-startup`, `disable-startup`, and `quit`. Unknown schema versions, unknown commands, malformed JSON, truncated frames, and oversized frames are rejected without invoking an application handler.
 
 ## 8. Autostart
 
@@ -216,6 +216,8 @@ HKCU\Software\Microsoft\Windows\CurrentVersion\Run
 The value points to the current executable with `--autostart`. Enabling autostart requires an explicit tray or CLI command.
 
 At startup, verify whether the configured path still matches the running executable. If the portable executable was moved, mark autostart as invalid and offer a user command to rewrite it. Do not silently modify registry state unless the user enabled the repair action.
+
+The managed registry adapter compares the complete quoted command without expanding environment variables. `--enable-startup` writes or explicitly repairs the entry, while `--disable-startup` removes it. A stale or otherwise different command is represented as an invalid tray state and remains unchanged until one of those user commands is invoked.
 
 ## 9. Core Audio integration
 

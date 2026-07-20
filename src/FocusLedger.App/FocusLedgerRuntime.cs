@@ -60,6 +60,9 @@ sealed class FocusLedgerRuntime : IAsyncDisposable {
     public bool HasConfigurationError {
         get { return Volatile.Read(ref configurationError) != 0; }
     }
+    public FocusLedgerConfiguration Configuration {
+        get { return configurationManager.Current; }
+    }
     public async ValueTask<TrackerLifecycleState> InitializeAsync(CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);
         await operationGate.WaitAsync(cancellationToken)

@@ -7,6 +7,8 @@ public enum LocalCommandKind {
     Status,
     Pause,
     Resume,
+    EnableStartup,
+    DisableStartup,
     Quit
 }
 
@@ -35,6 +37,8 @@ public static class LocalCommandLine {
             "--status" => LocalCommandKind.Status,
             "--pause" => LocalCommandKind.Pause,
             "--resume" => LocalCommandKind.Resume,
+            "--enable-startup" => LocalCommandKind.EnableStartup,
+            "--disable-startup" => LocalCommandKind.DisableStartup,
             "--quit" => LocalCommandKind.Quit,
             _ => null
         };

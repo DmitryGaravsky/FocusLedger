@@ -85,7 +85,7 @@ The user can operate the application entirely through the tray or CLI, run one i
 | CFG-001 | Implement configuration model and defaults | Complete | FND-006 | Complete documented default config can be serialized and loaded. |
 | CFG-002 | Implement configuration validation | Complete | CFG-001 | Duplicate IDs, invalid references, unsafe privacy settings, regex errors, and invalid ranges are rejected safely. |
 | CFG-003 | Implement atomic hot reload | Complete | CFG-002 | Valid config replaces snapshot; invalid config leaves previous snapshot active and signals an error. |
-| WIN-008 | Implement per-user autostart | Planned | UX-002 | Explicit command creates/removes HKCU Run entry and detects moved executable path. |
+| WIN-008 | Implement per-user autostart | Complete | UX-002 | Explicit command creates/removes HKCU Run entry and detects moved executable path. |
 | OPS-005 | Implement data/config/report folder commands | Planned | UX-002 | User-commanded shell operations open only known local paths. |
 | OPS-006 | Implement retention maintenance | Planned | CFG-001, DATA-003 | Activity and diagnostics retention runs safely inside storage root. |
 | TEST-002 | Add command/config/autostart integration tests | Planned | OPS-004, CFG-003, WIN-008 | Same-user command, malformed command, invalid config, reload, and registry scenarios pass. |

@@ -1,4 +1,5 @@
-﻿using FocusLedger.Windows.Commands;
+﻿using FocusLedger.Windows.Autostart;
+using FocusLedger.Windows.Commands;
 using FocusLedger.Windows.Messaging;
 using FocusLedger.Windows.SingleInstance;
 using FocusLedger.Windows.Tray;
@@ -23,8 +24,15 @@ static class Program {
             try {
                 await runtime.InitializeAsync(CancellationToken.None)
                     .ConfigureAwait(false);
+                string executablePath = Environment.ProcessPath
+                    ?? throw new InvalidOperationException("The current executable path is unavailable.");
+                PerUserAutostart autostart = new(
+                    executablePath,
+                    runtime.Configuration.Startup.RegistryValueName,
+                    runtime.Configuration.Startup.Arguments);
+                AutostartState autostartState = autostart.GetState();
                 TaskCompletionSource<AppTrayCommandDispatcher> dispatcherReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
-                Task applicationTask = RunStaApplicationAsync(runtime, dispatcherReady);
+                Task applicationTask = RunStaApplicationAsync(runtime, autostart, autostartState, dispatcherReady);
                 AppTrayCommandDispatcher dispatcher = await dispatcherReady.Task
                     .ConfigureAwait(false);
                 using(CancellationTokenSource commandServerCancellation = new()) {
@@ -66,9 +74,11 @@ static class Program {
     // Runs all Windows Forms resources on one dedicated STA thread and exposes only its completion task.
     static Task RunStaApplicationAsync(
         FocusLedgerRuntime runtime,
+        PerUserAutostart autostart,
+        AutostartState autostartState,
         TaskCompletionSource<AppTrayCommandDispatcher> dispatcherReady) {
         TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        Thread applicationThread = new(() => RunStaApplication(runtime, dispatcherReady, completion)) {
+        Thread applicationThread = new(() => RunStaApplication(runtime, autostart, autostartState, dispatcherReady, completion)) {
             IsBackground = false,
             Name = "FocusLedger.Application"
         };
@@ -78,12 +88,14 @@ static class Program {
     }
     static void RunStaApplication(
         FocusLedgerRuntime runtime,
+        PerUserAutostart autostart,
+        AutostartState autostartState,
         TaskCompletionSource<AppTrayCommandDispatcher> dispatcherReady,
         TaskCompletionSource completion) {
         try {
             ApplicationConfiguration.Initialize();
             using(WindowsMessageLoopHost messageLoopHost = new()) {
-                AppTrayCommandDispatcher dispatcher = new(runtime, messageLoopHost);
+                AppTrayCommandDispatcher dispatcher = new(runtime, messageLoopHost, autostart, autostartState);
                 using(TrayStatusIndicator trayStatusIndicator = new(dispatcher.Handle)) {
                     dispatcher.Attach(trayStatusIndicator);
                     dispatcherReady.TrySetResult(dispatcher);

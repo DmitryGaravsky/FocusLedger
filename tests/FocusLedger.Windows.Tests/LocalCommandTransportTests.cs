@@ -9,6 +9,8 @@ public sealed class LocalCommandTransportTests {
     [TestCase("--status", LocalCommandKind.Status)]
     [TestCase("--pause", LocalCommandKind.Pause)]
     [TestCase("--resume", LocalCommandKind.Resume)]
+    [TestCase("--enable-startup", LocalCommandKind.EnableStartup)]
+    [TestCase("--disable-startup", LocalCommandKind.DisableStartup)]
     [TestCase("--quit", LocalCommandKind.Quit)]
     public void CommandLineParsesSupportedCommand(string argument, LocalCommandKind expected) {
         Assert.That(LocalCommandLine.TryParse([argument], out LocalCommandKind? command), Is.True);
@@ -22,55 +24,59 @@ public sealed class LocalCommandTransportTests {
     [TestCase(LocalCommandKind.Status)]
     [TestCase(LocalCommandKind.Pause)]
     [TestCase(LocalCommandKind.Resume)]
+    [TestCase(LocalCommandKind.EnableStartup)]
+    [TestCase(LocalCommandKind.DisableStartup)]
     [TestCase(LocalCommandKind.Quit)]
     public async Task SameUserClientReceivesAcknowledgement(LocalCommandKind command) {
         string pipeName = $"FocusLedger.Tests.{Guid.NewGuid():N}";
         LocalCommandKind? receivedCommand = null;
         bool afterAcknowledgementCalled = false;
-        using CancellationTokenSource cancellationSource = new();
-        LocalCommandServer server = new(pipeName, (received, _) => {
-            receivedCommand = received;
-            return ValueTask.FromResult(new LocalCommandResult(true, "accepted", () => {
-                afterAcknowledgementCalled = true;
-                return ValueTask.CompletedTask;
-            }));
-        });
-        Task serverTask = server.RunAsync(cancellationSource.Token);
-        LocalCommandClient client = new(pipeName);
-        LocalCommandResult result = await client.SendAsync(command, TimeSpan.FromSeconds(5), CancellationToken.None);
-        await cancellationSource.CancelAsync();
-        await serverTask;
-        Assert.Multiple(() => {
-            Assert.That(receivedCommand, Is.EqualTo(command));
-            Assert.That(result.Accepted, Is.True);
-            Assert.That(result.Status, Is.EqualTo("accepted"));
-            Assert.That(result.AfterAcknowledgement, Is.Null);
-            Assert.That(afterAcknowledgementCalled, Is.True);
-        });
+        using(CancellationTokenSource cancellationSource = new()) {
+            LocalCommandServer server = new(pipeName, (received, _) => {
+                receivedCommand = received;
+                return ValueTask.FromResult(new LocalCommandResult(true, "accepted", () => {
+                    afterAcknowledgementCalled = true;
+                    return ValueTask.CompletedTask;
+                }));
+            });
+            Task serverTask = server.RunAsync(cancellationSource.Token);
+            LocalCommandClient client = new(pipeName);
+            LocalCommandResult result = await client.SendAsync(command, TimeSpan.FromSeconds(5), CancellationToken.None);
+            await cancellationSource.CancelAsync();
+            await serverTask;
+            Assert.Multiple(() => {
+                Assert.That(receivedCommand, Is.EqualTo(command));
+                Assert.That(result.Accepted, Is.True);
+                Assert.That(result.Status, Is.EqualTo("accepted"));
+                Assert.That(result.AfterAcknowledgement, Is.Null);
+                Assert.That(afterAcknowledgementCalled, Is.True);
+            });
+        }
     }
     [Test]
     public async Task MalformedRequestIsRejectedWithoutInvokingHandler() {
         string pipeName = $"FocusLedger.Tests.{Guid.NewGuid():N}";
         int handlerCalls = 0;
-        using CancellationTokenSource cancellationSource = new();
-        LocalCommandServer server = new(pipeName, (_, _) => {
-            handlerCalls++;
-            return ValueTask.FromResult(new LocalCommandResult(true, "accepted"));
-        });
-        Task serverTask = server.RunAsync(cancellationSource.Token);
-        using(NamedPipeClientStream pipe = new(
-            ".",
-            pipeName,
-            PipeDirection.InOut,
-            PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly)) {
-            await pipe.ConnectAsync(5000);
-            await LocalCommandServer.WriteBoundedPayloadAsync(pipe, "{invalid"u8.ToArray(), CancellationToken.None);
-            await pipe.FlushAsync();
-            byte[] response = await LocalCommandServer.ReadBoundedPayloadAsync(pipe, CancellationToken.None);
-            Assert.That(Encoding.UTF8.GetString(response), Does.Contain("\"status\":\"invalid-command\""));
+        using(CancellationTokenSource cancellationSource = new()) {
+            LocalCommandServer server = new(pipeName, (_, _) => {
+                handlerCalls++;
+                return ValueTask.FromResult(new LocalCommandResult(true, "accepted"));
+            });
+            Task serverTask = server.RunAsync(cancellationSource.Token);
+            using(NamedPipeClientStream pipe = new(
+                ".",
+                pipeName,
+                PipeDirection.InOut,
+                PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly)) {
+                await pipe.ConnectAsync(5000);
+                await LocalCommandServer.WriteBoundedPayloadAsync(pipe, "{invalid"u8.ToArray(), CancellationToken.None);
+                await pipe.FlushAsync();
+                byte[] response = await LocalCommandServer.ReadBoundedPayloadAsync(pipe, CancellationToken.None);
+                Assert.That(Encoding.UTF8.GetString(response), Does.Contain("\"status\":\"invalid-command\""));
+            }
+            await cancellationSource.CancelAsync();
+            await serverTask;
         }
-        await cancellationSource.CancelAsync();
-        await serverTask;
         Assert.That(handlerCalls, Is.Zero);
     }
     [Test]
