@@ -30,6 +30,7 @@ static class Program {
                 using(CancellationTokenSource commandServerCancellation = new()) {
                     LocalCommandServer commandServer = new(dispatcher.HandleLocalCommandAsync);
                     Task commandServerTask = commandServer.RunAsync(commandServerCancellation.Token);
+                    Task configurationTask = runtime.RunConfigurationAsync(dispatcher.HandleConfigurationStateAsync, commandServerCancellation.Token);
                     try {
                         if(startupCommand is not null) {
                             LocalCommandResult result = await dispatcher.HandleLocalCommandAsync(startupCommand.Value, CancellationToken.None)
@@ -46,6 +47,13 @@ static class Program {
                             .ConfigureAwait(false);
                         await commandServerTask
                             .ConfigureAwait(false);
+                        try {
+                            await configurationTask
+                                .ConfigureAwait(false);
+                        }
+                        catch(OperationCanceledException)
+                            when(commandServerCancellation.IsCancellationRequested) {
+                        }
                     }
                 }
             }

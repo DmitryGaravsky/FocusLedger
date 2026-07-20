@@ -194,6 +194,8 @@ Validation errors are reported using JSON paths and safe fixed messages. The off
 - Keep the previous snapshot on failure.
 - Emit `configuration.reloaded` or `configuration.reload_failed`.
 
+`ConfigurationManager` implements this lifecycle with a capacity-one change channel, the documented 500 ms production debounce, bounded read retries, a 2 MiB file limit, and atomic `Volatile` snapshot publication. Its result callback distinguishes created, loaded, reloaded, invalid, and read-failure outcomes so the composition root can map them to events and tray error state without receiving raw file content.
+
 ## 6. Atomic writes
 
 When FocusLedger writes configuration or migration output:

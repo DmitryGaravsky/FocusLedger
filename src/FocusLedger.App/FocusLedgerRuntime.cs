@@ -1,6 +1,7 @@
 ﻿namespace FocusLedger.App;
 
 using FocusLedger.Core.Abstractions;
+using FocusLedger.Core.Configuration;
 using FocusLedger.Core.Coordination;
 using FocusLedger.Core.Events;
 using FocusLedger.Core.Persistence;
@@ -12,12 +13,14 @@ sealed class FocusLedgerRuntime : IAsyncDisposable {
     readonly OperationalEventSession eventSession;
     readonly DailyJsonlActivityEventWriter eventWriter;
     readonly ManualPauseController pauseController;
+    readonly ConfigurationManager configurationManager;
     readonly TimeProvider timeProvider;
     readonly string dataRootPath;
     readonly SemaphoreSlim operationGate = new(1, 1);
     bool initialized;
     bool stopped;
     bool disposed;
+    int configurationError;
     public FocusLedgerRuntime(string storageRootPath, TimeProvider timeProvider) {
         ArgumentException.ThrowIfNullOrWhiteSpace(storageRootPath);
         ArgumentNullException.ThrowIfNull(timeProvider);
@@ -28,6 +31,11 @@ sealed class FocusLedgerRuntime : IAsyncDisposable {
         eventSession = new OperationalEventSession(stateStore, timeProvider.LocalTimeZone);
         eventWriter = new DailyJsonlActivityEventWriter(dataRootPath, TimeSpan.FromSeconds(2), timeProvider);
         pauseController = new ManualPauseController(eventSession, eventWriter);
+        configurationManager = new ConfigurationManager(
+            Path.Combine(resolvedRootPath, "config.json"),
+            new ConfigurationValidator(),
+            timeProvider,
+            TimeSpan.FromMilliseconds(500));
     }
     public async ValueTask DisposeAsync() {
         if(disposed)
@@ -37,20 +45,33 @@ sealed class FocusLedgerRuntime : IAsyncDisposable {
             .ConfigureAwait(false);
         operationGate.Release();
         operationGate.Dispose();
-        await pauseController.DisposeAsync().ConfigureAwait(false);
-        await eventWriter.DisposeAsync().ConfigureAwait(false);
-        await eventSession.DisposeAsync().ConfigureAwait(false);
+        await pauseController.DisposeAsync()
+            .ConfigureAwait(false);
+        await configurationManager.DisposeAsync()
+            .ConfigureAwait(false);
+        await eventWriter.DisposeAsync()
+            .ConfigureAwait(false);
+        await eventSession.DisposeAsync()
+            .ConfigureAwait(false);
     }
     public TrackerLifecycleState State {
         get { return pauseController.State; }
     }
+    public bool HasConfigurationError {
+        get { return Volatile.Read(ref configurationError) != 0; }
+    }
     public async ValueTask<TrackerLifecycleState> InitializeAsync(CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);
-        await operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await operationGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
             if(initialized)
                 throw new InvalidOperationException("The application runtime is already initialized.");
-            ManualPauseInitialization initialization = await pauseController.InitializeAsync(cancellationToken).ConfigureAwait(false);
+            ConfigurationReloadResult configurationResult = await configurationManager.InitializeAsync(cancellationToken)
+                .ConfigureAwait(false);
+            UpdateConfigurationError(configurationResult);
+            ManualPauseInitialization initialization = await pauseController.InitializeAsync(cancellationToken)
+                .ConfigureAwait(false);
             DateTimeOffset observedAt = timeProvider.GetLocalNow();
             if(!CurrentActivityFileHasEvents(observedAt))
                 await WriteInitialDayBoundaryAsync(observedAt, cancellationToken).ConfigureAwait(false);
@@ -62,6 +83,14 @@ sealed class FocusLedgerRuntime : IAsyncDisposable {
             return pauseController.State;
         }
         finally { operationGate.Release(); }
+    }
+    public Task RunConfigurationAsync(Func<bool, CancellationToken, ValueTask> resultHandler, CancellationToken cancellationToken) {
+        ArgumentNullException.ThrowIfNull(resultHandler);
+        return configurationManager.RunAsync(async (result, token) => {
+            UpdateConfigurationError(result);
+            await resultHandler(HasConfigurationError, token)
+                .ConfigureAwait(false);
+        }, cancellationToken);
     }
     public async ValueTask<TrackerLifecycleState> SetPausedAsync(bool paused, CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -114,5 +143,9 @@ sealed class FocusLedgerRuntime : IAsyncDisposable {
     void ThrowIfNotRunning() {
         if(!initialized || stopped)
             throw new InvalidOperationException("The application runtime is not accepting commands.");
+    }
+    void UpdateConfigurationError(ConfigurationReloadResult result) {
+        bool hasError = result.Status is ConfigurationReloadStatus.Invalid or ConfigurationReloadStatus.ReadFailure;
+        Volatile.Write(ref configurationError, hasError ? 1 : 0);
     }
 }

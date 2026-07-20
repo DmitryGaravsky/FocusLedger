@@ -23,7 +23,7 @@ sealed class AppTrayCommandDispatcher {
         if(trayStatusIndicator is not null)
             throw new InvalidOperationException("The tray status indicator is already attached.");
         trayStatusIndicator = indicator;
-        indicator.Update(CreateMenuState(runtime.State, false));
+        indicator.Update(CreateMenuState(runtime.State, runtime.HasConfigurationError));
     }
     public void Handle(TrayCommand command) {
         if(command == TrayCommand.PauseTracking) {
@@ -56,6 +56,11 @@ sealed class AppTrayCommandDispatcher {
             PostState(CreateMenuState(runtime.State, true));
             return new LocalCommandResult(false, "error");
         }
+    }
+    public ValueTask HandleConfigurationStateAsync(bool hasError, CancellationToken cancellationToken) {
+        cancellationToken.ThrowIfCancellationRequested();
+        PostState(CreateMenuState(runtime.State, hasError));
+        return ValueTask.CompletedTask;
     }
     async ValueTask<LocalCommandResult> StopAsync(CancellationToken cancellationToken) {
         if(Interlocked.Exchange(ref stopping, 1) != 0)
