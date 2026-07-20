@@ -24,18 +24,22 @@ public sealed class OperationalEventSession : IAsyncDisposable {
         if(disposed)
             return;
         disposed = true;
-        await sessionGate.WaitAsync().ConfigureAwait(false);
+        await sessionGate.WaitAsync()
+            .ConfigureAwait(false);
         sessionGate.Release();
         sessionGate.Dispose();
-        await stateStore.DisposeAsync().ConfigureAwait(false);
+        await stateStore.DisposeAsync()
+            .ConfigureAwait(false);
     }
     public async ValueTask<OperationalSessionInitialization> InitializeAsync(CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);
-        await sessionGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await sessionGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
             if(initialized)
                 throw new InvalidOperationException("The operational event session is already initialized.");
-            OperationalStateInitialization initialization = await stateStore.BeginRunAsync(cancellationToken).ConfigureAwait(false);
+            OperationalStateInitialization initialization = await stateStore.BeginRunAsync(cancellationToken)
+                .ConfigureAwait(false);
             nextSequence = initialization.State.NextSequence;
             manualPause = initialization.State.ManualPause;
             initialized = true;
@@ -53,7 +57,8 @@ public sealed class OperationalEventSession : IAsyncDisposable {
             GetEventType(signal.Activity),
             signal.ObservedAt,
             "operational",
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken)
+            .ConfigureAwait(false);
         return new OperationalActivityEvent(envelope);
     }
     // Reserves a common envelope for any privacy-normalized event before it enters persistence.
@@ -65,12 +70,14 @@ public sealed class OperationalEventSession : IAsyncDisposable {
         ArgumentException.ThrowIfNullOrWhiteSpace(eventType);
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         ObjectDisposedException.ThrowIf(disposed, this);
-        await sessionGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await sessionGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
             ThrowIfNotInitialized();
             long sequence = nextSequence;
             nextSequence = checked(nextSequence + 1);
-            await stateStore.SaveProgressAsync(nextSequence, manualPause, cancellationToken).ConfigureAwait(false);
+            await stateStore.SaveProgressAsync(nextSequence, manualPause, cancellationToken)
+                .ConfigureAwait(false);
             DateTimeOffset timestampUtc = observedAt.ToUniversalTime();
             int utcOffsetMinutes = checked((int)localTimeZone.GetUtcOffset(timestampUtc.UtcDateTime).TotalMinutes);
             EventEnvelope envelope = new(
@@ -91,7 +98,8 @@ public sealed class OperationalEventSession : IAsyncDisposable {
         DateTimeOffset observedAt,
         CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);
-        await sessionGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await sessionGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
             ThrowIfNotInitialized();
             if(manualPause == paused)
@@ -99,7 +107,8 @@ public sealed class OperationalEventSession : IAsyncDisposable {
             long sequence = nextSequence;
             nextSequence = checked(nextSequence + 1);
             manualPause = paused;
-            await stateStore.SaveProgressAsync(nextSequence, manualPause, cancellationToken).ConfigureAwait(false);
+            await stateStore.SaveProgressAsync(nextSequence, manualPause, cancellationToken)
+                .ConfigureAwait(false);
             DateTimeOffset timestampUtc = observedAt.ToUniversalTime();
             int utcOffsetMinutes = checked((int)localTimeZone.GetUtcOffset(timestampUtc.UtcDateTime).TotalMinutes);
             EventEnvelope envelope = new(
@@ -117,10 +126,12 @@ public sealed class OperationalEventSession : IAsyncDisposable {
     // Marks the run clean only after the caller has drained and flushed the event pipeline.
     public async ValueTask MarkCleanShutdownAsync(CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);
-        await sessionGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await sessionGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
             ThrowIfNotInitialized();
-            await stateStore.MarkCleanShutdownAsync(nextSequence, manualPause, cancellationToken).ConfigureAwait(false);
+            await stateStore.MarkCleanShutdownAsync(nextSequence, manualPause, cancellationToken)
+                .ConfigureAwait(false);
         }
         finally { sessionGate.Release(); }
     }

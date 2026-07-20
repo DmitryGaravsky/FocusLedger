@@ -136,6 +136,39 @@ public sealed class ConfigurationManagerTests {
         }
         finally { Directory.Delete(rootPath, true); }
     }
+    [Test]
+    public async Task OversizedConfigurationFileIsRejectedAsReadFailure() {
+        string rootPath = CreateRootPath();
+        try {
+            string configurationPath = Path.Combine(rootPath, "config.json");
+            byte[] oversizedContent = new byte[(2 * 1024 * 1024) + 1];
+            Array.Fill(oversizedContent, (byte)' ');
+            await File.WriteAllBytesAsync(configurationPath, oversizedContent);
+            await using(ConfigurationManager manager = CreateManager(configurationPath)) {
+                ConfigurationReloadResult result = await manager.InitializeAsync(CancellationToken.None);
+                Assert.That(result.Status, Is.EqualTo(ConfigurationReloadStatus.ReadFailure));
+            }
+        }
+        finally { Directory.Delete(rootPath, true); }
+    }
+    [Test]
+    public async Task ReadRetriesTransientSharingViolationAndSucceeds() {
+        string rootPath = CreateRootPath();
+        try {
+            string configurationPath = Path.Combine(rootPath, "config.json");
+            await File.WriteAllBytesAsync(configurationPath, ConfigurationSerializer.Serialize(BuiltInConfiguration.CreateDefault()));
+            await using(ConfigurationManager manager = CreateManager(configurationPath)) {
+                using(FileStream exclusiveLock = new(configurationPath, FileMode.Open, FileAccess.Read, FileShare.None)) {
+                    Task<ConfigurationReloadResult> initializeTask = manager.InitializeAsync(CancellationToken.None).AsTask();
+                    await Task.Delay(TimeSpan.FromMilliseconds(80));
+                    exclusiveLock.Dispose();
+                    ConfigurationReloadResult result = await initializeTask.WaitAsync(TimeSpan.FromSeconds(5));
+                    Assert.That(result.Status, Is.EqualTo(ConfigurationReloadStatus.Loaded));
+                }
+            }
+        }
+        finally { Directory.Delete(rootPath, true); }
+    }
     static ConfigurationManager CreateManager(string configurationPath) {
         return new ConfigurationManager(configurationPath, new ConfigurationValidator(), TimeProvider.System, TimeSpan.FromMilliseconds(50));
     }

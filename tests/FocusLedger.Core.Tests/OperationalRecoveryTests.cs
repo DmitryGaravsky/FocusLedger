@@ -119,6 +119,30 @@ public sealed class OperationalRecoveryTests {
         await sourceTask;
         Assert.That(signalSink.Signals, Is.Not.Empty);
     }
+    [Test]
+    public async Task HeartbeatRunAsyncThrowsWhenStartedMoreThanOnce() {
+        RecordingSignalSink signalSink = new();
+        await using HeartbeatSignalSource source = new(TimeSpan.FromMilliseconds(10), TimeProvider.System, new IncrementingMonotonicClock());
+        using CancellationTokenSource cancellationSource = new();
+        Task firstRun = source.RunAsync(signalSink, cancellationSource.Token);
+        await signalSink.SignalReceived.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.That(async () => await source.RunAsync(signalSink, cancellationSource.Token), Throws.TypeOf<InvalidOperationException>());
+        await cancellationSource.CancelAsync();
+        await firstRun;
+    }
+    [Test]
+    public async Task OperationalProcessorRejectsNonOperationalSignal() {
+        string rootPath = CreateRootPath();
+        try {
+            await using OperationalEventSession session = CreateSession(rootPath);
+            OperationalSignalProcessor processor = new(session);
+            ForegroundWindowSignal foreignSignal = new(1, ForegroundObservationKind.WindowChanged, ObservationTime, 1, SignalDelivery.NonDroppable);
+            Assert.That(
+                async () => await processor.ProcessAsync(foreignSignal, new ActivityRuntimeState(), CancellationToken.None),
+                Throws.TypeOf<ArgumentException>());
+        }
+        finally { Directory.Delete(rootPath, true); }
+    }
     static OperationalEventSession CreateSession(string rootPath) {
         OperationalStateStore store = new(Path.Combine(rootPath, "state.json"));
         return new OperationalEventSession(store, TimeZoneInfo.Utc);

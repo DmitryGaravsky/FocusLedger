@@ -24,10 +24,6 @@ public sealed class TrayStatusIndicator : IDisposable {
         commandMenu.Dispose();
         disposed = true;
     }
-    // Replaces the shell presentation atomically from one privacy-safe status snapshot.
-    public void Update(TrayStatus status) {
-        Update(new TrayMenuState(status, TrayCommandCapabilities.Exit, false));
-    }
     // Updates icon, tooltip, command availability, and checked state from one immutable snapshot.
     public void Update(TrayMenuState state) {
         ObjectDisposedException.ThrowIf(disposed, this);

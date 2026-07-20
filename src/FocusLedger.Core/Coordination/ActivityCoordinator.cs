@@ -32,7 +32,8 @@ public sealed class ActivityCoordinator : IActivitySignalSink, IAsyncDisposable 
     }
     public async ValueTask DisposeAsync() {
         Complete();
-        await eventWriter.DisposeAsync().ConfigureAwait(false);
+        await eventWriter.DisposeAsync()
+            .ConfigureAwait(false);
     }
     readonly ActivityRuntimeState runtimeState = new();
     public TrackerLifecycleState TrackerState {

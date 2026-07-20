@@ -134,6 +134,23 @@ public sealed class OperationalStateStoreTests {
         }
         finally { Directory.Delete(rootPath, true); }
     }
+    [Test]
+    public async Task ReplacementRetriesWhileDestinationIsTransientlyLockedAndSucceeds() {
+        string rootPath = CreateRootPath();
+        try {
+            await using OperationalStateStore store = CreateStore(rootPath);
+            await store.SaveProgressAsync(1, false, CancellationToken.None);
+            using(FileStream exclusiveLock = new(GetStatePath(rootPath), FileMode.Open, FileAccess.Read, FileShare.None)) {
+                Task saveTask = store.SaveProgressAsync(99, true, CancellationToken.None).AsTask();
+                await Task.Delay(TimeSpan.FromMilliseconds(60));
+                exclusiveLock.Dispose();
+                await saveTask.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            OperationalStateLoadResult result = await store.LoadAsync(CancellationToken.None);
+            Assert.That(result.State.NextSequence, Is.EqualTo(99));
+        }
+        finally { Directory.Delete(rootPath, true); }
+    }
     static OperationalStateStore CreateStore(string rootPath) {
         return new OperationalStateStore(GetStatePath(rootPath));
     }

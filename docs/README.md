@@ -28,6 +28,7 @@ This directory is the normative technical specification for FocusLedger. Documen
 
 - [`engineering/testing-and-quality.md`](engineering/testing-and-quality.md) — test strategy, performance targets, long-running tests, privacy tests, and fault injection.
 - [`engineering/build-release-and-operations.md`](engineering/build-release-and-operations.md) — .NET publication, GitHub Actions, releases, signing policy, dependency governance, and runtime operations.
+- [`engineering/implementation-notes.md`](engineering/implementation-notes.md) — deferred test-coverage gaps, closed investigations, and open design observations from code review, to revisit before 1.0 stabilization.
 
 ## Delivery
 

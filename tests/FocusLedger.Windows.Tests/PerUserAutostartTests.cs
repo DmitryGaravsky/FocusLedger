@@ -23,6 +23,12 @@ public sealed class PerUserAutostartTests {
         });
     }
     [Test]
+    public void CaseDifferingConfiguredCommandIsStillEnabled() {
+        MemoryAutostartRegistry registry = new() { Value = ExpectedCommand.ToUpperInvariant() };
+        PerUserAutostart autostart = Create(registry);
+        Assert.That(autostart.GetState(), Is.EqualTo(AutostartState.Enabled));
+    }
+    [Test]
     public void DifferentConfiguredCommandIsReportedAsInvalidPath() {
         MemoryAutostartRegistry registry = new() { Value = "\"C:\\Old\\FocusLedger.exe\" --autostart" };
         PerUserAutostart autostart = Create(registry);

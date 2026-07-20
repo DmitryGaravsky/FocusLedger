@@ -28,7 +28,8 @@ public sealed class HeartbeatSignalSource : IActivitySignalSource {
         if(disposed)
             return;
         disposed = true;
-        await disposalCancellation.CancelAsync().ConfigureAwait(false);
+        await disposalCancellation.CancelAsync()
+            .ConfigureAwait(false);
         disposalCancellation.Dispose();
     }
     public HeartbeatSignalSourceMetrics GetMetrics() {
@@ -46,7 +47,8 @@ public sealed class HeartbeatSignalSource : IActivitySignalSource {
             disposalCancellation.Token)) {
             using(PeriodicTimer timer = new(interval, timeProvider)) {
                 try {
-                    while(await timer.WaitForNextTickAsync(linkedCancellation.Token).ConfigureAwait(false))
+                    while(await timer.WaitForNextTickAsync(linkedCancellation.Token)
+                        .ConfigureAwait(false))
                         Publish(signalSink);
                 }
                 catch(OperationCanceledException)

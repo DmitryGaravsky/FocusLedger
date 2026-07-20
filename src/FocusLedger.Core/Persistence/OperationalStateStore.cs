@@ -18,29 +18,35 @@ public sealed class OperationalStateStore : IAsyncDisposable {
         if(disposed)
             return;
         disposed = true;
-        await stateGate.WaitAsync().ConfigureAwait(false);
+        await stateGate.WaitAsync()
+            .ConfigureAwait(false);
         stateGate.Release();
         stateGate.Dispose();
     }
     public async ValueTask<OperationalStateLoadResult> LoadAsync(CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);
-        await stateGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await stateGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
-            return await LoadCoreAsync(cancellationToken).ConfigureAwait(false);
+            return await LoadCoreAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
         finally { stateGate.Release(); }
     }
     // Marks the new run dirty before collection starts and returns the previous shutdown outcome.
     public async ValueTask<OperationalStateInitialization> BeginRunAsync(CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);
-        await stateGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await stateGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
-            OperationalStateLoadResult loaded = await LoadCoreAsync(cancellationToken).ConfigureAwait(false);
+            OperationalStateLoadResult loaded = await LoadCoreAsync(cancellationToken)
+                .ConfigureAwait(false);
             bool recoveredFromInvalidState = loaded.Status == OperationalStateLoadStatus.Invalid;
             bool wasPreviousShutdownClean = loaded.Status != OperationalStateLoadStatus.Invalid
                 && (loaded.Status == OperationalStateLoadStatus.Missing || loaded.State.CleanShutdown);
             OperationalState runningState = loaded.State with { CleanShutdown = false };
-            await SaveCoreAsync(runningState, cancellationToken).ConfigureAwait(false);
+            await SaveCoreAsync(runningState, cancellationToken)
+                .ConfigureAwait(false);
             return new OperationalStateInitialization(runningState, wasPreviousShutdownClean, recoveredFromInvalidState);
         }
         finally { stateGate.Release(); }
@@ -48,18 +54,22 @@ public sealed class OperationalStateStore : IAsyncDisposable {
     // Persists sequence and pause progress while retaining the dirty current-run marker.
     public async ValueTask SaveProgressAsync(long nextSequence, bool manualPause, CancellationToken cancellationToken) {
         ArgumentOutOfRangeException.ThrowIfLessThan(nextSequence, 1);
-        await SaveAsync(new OperationalState(1, nextSequence, manualPause, false), cancellationToken).ConfigureAwait(false);
+        await SaveAsync(new OperationalState(1, nextSequence, manualPause, false), cancellationToken)
+            .ConfigureAwait(false);
     }
     // Atomically commits the final sequence and pause state after all event writers have flushed.
     public async ValueTask MarkCleanShutdownAsync(long nextSequence, bool manualPause, CancellationToken cancellationToken) {
         ArgumentOutOfRangeException.ThrowIfLessThan(nextSequence, 1);
-        await SaveAsync(new OperationalState(1, nextSequence, manualPause, true), cancellationToken).ConfigureAwait(false);
+        await SaveAsync(new OperationalState(1, nextSequence, manualPause, true), cancellationToken)
+            .ConfigureAwait(false);
     }
     async ValueTask SaveAsync(OperationalState state, CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);
-        await stateGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await stateGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
-            await SaveCoreAsync(state, cancellationToken).ConfigureAwait(false);
+            await SaveCoreAsync(state, cancellationToken)
+                .ConfigureAwait(false);
         }
         finally { stateGate.Release(); }
     }
@@ -70,7 +80,8 @@ public sealed class OperationalStateStore : IAsyncDisposable {
             FileInfo stateFile = new(stateFilePath);
             if(stateFile.Length is <= 0 or > MaximumStateFileBytes)
                 return new OperationalStateLoadResult(OperationalState.Initial, OperationalStateLoadStatus.Invalid);
-            byte[] utf8Json = await File.ReadAllBytesAsync(stateFilePath, cancellationToken).ConfigureAwait(false);
+            byte[] utf8Json = await File.ReadAllBytesAsync(stateFilePath, cancellationToken)
+                .ConfigureAwait(false);
             OperationalState? state = JsonSerializer.Deserialize(utf8Json, OperationalStateJsonContext.Default.OperationalState);
             if(state is null || state.SchemaVersion != 1 || state.NextSequence < 1)
                 return new OperationalStateLoadResult(OperationalState.Initial, OperationalStateLoadStatus.Invalid);
@@ -96,8 +107,10 @@ public sealed class OperationalStateStore : IAsyncDisposable {
                 FileShare.None,
                 4096,
                 FileOptions.Asynchronous | FileOptions.WriteThrough)) {
-                await temporaryStream.WriteAsync(utf8Json, cancellationToken).ConfigureAwait(false);
-                await temporaryStream.FlushAsync(cancellationToken).ConfigureAwait(false);
+                await temporaryStream.WriteAsync(utf8Json, cancellationToken)
+                    .ConfigureAwait(false);
+                await temporaryStream.FlushAsync(cancellationToken)
+                    .ConfigureAwait(false);
                 temporaryStream.Flush(true);
             }
             await ReplaceTemporaryFileAsync(cancellationToken)

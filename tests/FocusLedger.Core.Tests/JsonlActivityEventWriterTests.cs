@@ -41,7 +41,11 @@ public sealed class JsonlActivityEventWriterTests {
                 using(FileStream reader = new(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
                     Assert.That(reader.Length, Is.GreaterThan(0));
                 }
-                Assert.That(() => CreateWriter(filePath), Throws.TypeOf<IOException>());
+                Assert.That(
+                    () => CreateWriter(filePath),
+                    Throws.TypeOf<IOException>()
+                        .With.Message.Contains("HRESULT 0x")
+                        .And.Message.Not.Contains(filePath));
             }
         }
         finally { File.Delete(filePath); }

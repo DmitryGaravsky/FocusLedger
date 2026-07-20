@@ -24,7 +24,7 @@ public sealed class M1EndToEndScenarioTests {
         string rootPath = CreateRootPath();
         try {
             string dataPath = Path.Combine(rootPath, "data");
-            string secondDayPath = GetActivityFilePath(dataPath, new DateOnly(2026, 7, 20));
+            string secondDayPath = ActivityFileNaming.GetFilePath(dataPath, new DateOnly(2026, 7, 20));
             await using(OperationalEventSession firstSession = CreateSession(rootPath)) {
                 OperationalSessionInitialization initialization = await firstSession.InitializeAsync(CancellationToken.None);
                 Assert.That(initialization.RecoveryRequired, Is.False);
@@ -119,12 +119,6 @@ public sealed class M1EndToEndScenarioTests {
         await foreach(JsonlReadItem item in CrashTolerantJsonlReader.ReadAsync(filePath, CancellationToken.None))
             items.Add(item);
         return items;
-    }
-    static string GetActivityFilePath(string dataPath, DateOnly date) {
-        return Path.Combine(
-            dataPath,
-            date.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture),
-            $"activity-{date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}.jsonl");
     }
     static string CreateRootPath() {
         string rootPath = Path.Combine(TestContext.CurrentContext.WorkDirectory, $"m1-scenario-{Guid.NewGuid():N}");

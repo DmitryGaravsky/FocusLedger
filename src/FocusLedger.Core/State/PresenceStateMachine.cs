@@ -34,15 +34,12 @@ public sealed class PresenceStateMachine {
         return transition;
     }
     static PresenceState Resolve(PresenceConditions conditions) {
-        if(conditions.IsSystemSuspended) {
+        if(conditions.IsSystemSuspended)
             return PresenceState.SystemSuspended;
-        }
-        if(conditions.IsSessionDisconnected) {
+        if(conditions.IsSessionDisconnected)
             return PresenceState.SessionDisconnected;
-        }
-        if(conditions.IsSessionLocked) {
+        if(conditions.IsSessionLocked)
             return PresenceState.SessionLocked;
-        }
         return conditions.Activity switch {
             PresenceActivityState.Active => PresenceState.Active,
             PresenceActivityState.Idle => PresenceState.Idle,

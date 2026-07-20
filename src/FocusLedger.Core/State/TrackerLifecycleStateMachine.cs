@@ -42,9 +42,8 @@ public sealed class TrackerLifecycleStateMachine {
     }
     // Starts graceful shutdown from any non-terminal operational phase.
     public TrackerLifecycleTransition BeginStopping() {
-        if(State == TrackerLifecycleState.Stopping) {
+        if(State == TrackerLifecycleState.Stopping)
             return Unchanged();
-        }
         if(State is TrackerLifecycleState.Starting or
             TrackerLifecycleState.Running or
             TrackerLifecycleState.Paused) {
@@ -58,9 +57,8 @@ public sealed class TrackerLifecycleStateMachine {
     }
     // Records an unrecoverable coordinator or persistence failure.
     public TrackerLifecycleTransition Fault() {
-        if(State == TrackerLifecycleState.Faulted) {
+        if(State == TrackerLifecycleState.Faulted)
             return Unchanged();
-        }
         if(State is TrackerLifecycleState.Starting or
             TrackerLifecycleState.Running or
             TrackerLifecycleState.Paused or
@@ -70,9 +68,8 @@ public sealed class TrackerLifecycleStateMachine {
         throw InvalidTransition(TrackerLifecycleState.Faulted);
     }
     TrackerLifecycleTransition TransitionFrom(TrackerLifecycleState requiredState, TrackerLifecycleState targetState) {
-        if(State == targetState) {
+        if(State == targetState)
             return Unchanged();
-        }
         if(State != requiredState)
             throw InvalidTransition(targetState);
         return TransitionTo(targetState);

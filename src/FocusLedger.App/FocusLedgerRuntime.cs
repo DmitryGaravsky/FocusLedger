@@ -147,10 +147,7 @@ sealed class FocusLedgerRuntime : IAsyncDisposable {
     }
     bool CurrentActivityFileHasEvents(DateTimeOffset observedAt) {
         DateOnly date = DateOnly.FromDateTime(observedAt.DateTime);
-        string filePath = Path.Combine(
-            dataRootPath,
-            date.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture),
-            $"activity-{date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}.jsonl");
+        string filePath = ActivityFileNaming.GetFilePath(dataRootPath, date);
         return File.Exists(filePath) && new FileInfo(filePath).Length > 0;
     }
     void ThrowIfNotRunning() {

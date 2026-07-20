@@ -33,8 +33,9 @@ public sealed class JsonlActivityEventWriter : IActivityEventWriter {
                 4096,
                 FileOptions.Asynchronous | FileOptions.SequentialScan);
         }
-        catch {
-            throw new IOException("The JSONL event writer could not open its activity file.");
+        catch(Exception exception) {
+            throw new IOException(
+                $"The JSONL event writer could not open its activity file ({exception.GetType().Name}, HRESULT 0x{exception.HResult:X8}).");
         }
         periodicFlushTask = RunPeriodicFlushAsync(flushInterval, timeProvider, disposalCancellation.Token);
     }
@@ -42,17 +43,22 @@ public sealed class JsonlActivityEventWriter : IActivityEventWriter {
         if(disposed)
             return;
         disposed = true;
-        await disposalCancellation.CancelAsync().ConfigureAwait(false);
-        await periodicFlushTask.ConfigureAwait(false);
-        await streamGate.WaitAsync().ConfigureAwait(false);
+        await disposalCancellation.CancelAsync()
+            .ConfigureAwait(false);
+        await periodicFlushTask
+            .ConfigureAwait(false);
+        await streamGate.WaitAsync()
+            .ConfigureAwait(false);
         bool disposalFailed = Volatile.Read(ref backgroundFailure) != 0;
         try {
             try {
-                await FlushStreamAsync(CancellationToken.None).ConfigureAwait(false);
+                await FlushStreamAsync(CancellationToken.None)
+                    .ConfigureAwait(false);
             }
             catch { disposalFailed = true; }
             try {
-                await stream.DisposeAsync().ConfigureAwait(false);
+                await stream.DisposeAsync()
+                    .ConfigureAwait(false);
             }
             catch { disposalFailed = true; }
         }
@@ -73,15 +79,19 @@ public sealed class JsonlActivityEventWriter : IActivityEventWriter {
         ArgumentNullException.ThrowIfNull(activityEvent);
         ThrowIfUnavailable();
         byte[] serializedEvent = ActivityEventJsonSerializer.Serialize(activityEvent);
-        await streamGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await streamGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
             ThrowIfUnavailable();
             try {
-                await stream.WriteAsync(serializedEvent, cancellationToken).ConfigureAwait(false);
-                await stream.WriteAsync(LineFeed, cancellationToken).ConfigureAwait(false);
+                await stream.WriteAsync(serializedEvent, cancellationToken)
+                    .ConfigureAwait(false);
+                await stream.WriteAsync(LineFeed, cancellationToken)
+                    .ConfigureAwait(false);
                 Interlocked.Increment(ref appendedEventCount);
                 if(IsCritical(activityEvent.Envelope.Type))
-                    await FlushStreamAsync(cancellationToken).ConfigureAwait(false);
+                    await FlushStreamAsync(cancellationToken)
+                        .ConfigureAwait(false);
             }
             catch(OperationCanceledException) {
                 Interlocked.Exchange(ref backgroundFailure, 1);
@@ -96,11 +106,13 @@ public sealed class JsonlActivityEventWriter : IActivityEventWriter {
     }
     public async ValueTask FlushAsync(CancellationToken cancellationToken) {
         ThrowIfUnavailable();
-        await streamGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await streamGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
             ThrowIfUnavailable();
             try {
-                await FlushStreamAsync(cancellationToken).ConfigureAwait(false);
+                await FlushStreamAsync(cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch(OperationCanceledException) {
                 throw;
@@ -115,10 +127,13 @@ public sealed class JsonlActivityEventWriter : IActivityEventWriter {
     async Task RunPeriodicFlushAsync(TimeSpan flushInterval, TimeProvider timeProvider, CancellationToken cancellationToken) {
         using(PeriodicTimer timer = new(flushInterval, timeProvider)) {
             try {
-                while(await timer.WaitForNextTickAsync(cancellationToken).ConfigureAwait(false)) {
-                    await streamGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+                while(await timer.WaitForNextTickAsync(cancellationToken)
+                    .ConfigureAwait(false)) {
+                    await streamGate.WaitAsync(cancellationToken)
+                        .ConfigureAwait(false);
                     try {
-                        await FlushStreamAsync(cancellationToken).ConfigureAwait(false);
+                        await FlushStreamAsync(cancellationToken)
+                            .ConfigureAwait(false);
                     }
                     finally { streamGate.Release(); }
                 }
@@ -132,7 +147,8 @@ public sealed class JsonlActivityEventWriter : IActivityEventWriter {
         }
     }
     async ValueTask FlushStreamAsync(CancellationToken cancellationToken) {
-        await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+        await stream.FlushAsync(cancellationToken)
+            .ConfigureAwait(false);
         Interlocked.Increment(ref flushCount);
     }
     void ThrowIfUnavailable() {

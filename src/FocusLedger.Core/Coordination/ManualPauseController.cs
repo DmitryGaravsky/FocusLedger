@@ -25,7 +25,8 @@ public sealed class ManualPauseController : IAsyncDisposable {
         if(disposed)
             return;
         disposed = true;
-        await commandGate.WaitAsync().ConfigureAwait(false);
+        await commandGate.WaitAsync()
+            .ConfigureAwait(false);
         commandGate.Release();
         commandGate.Dispose();
     }
@@ -35,11 +36,13 @@ public sealed class ManualPauseController : IAsyncDisposable {
     // Restores manual pause before any foreground attribution is allowed to begin.
     public async ValueTask<ManualPauseInitialization> InitializeAsync(CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);
-        await commandGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await commandGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
             if(initialized)
                 throw new InvalidOperationException("The manual pause controller is already initialized.");
-            OperationalSessionInitialization initialization = await eventSession.InitializeAsync(cancellationToken).ConfigureAwait(false);
+            OperationalSessionInitialization initialization = await eventSession.InitializeAsync(cancellationToken)
+                .ConfigureAwait(false);
             lifecycle.CompleteStartup(initialization.ManualPause);
             initialized = true;
             return new ManualPauseInitialization(initialization.RecoveryRequired, lifecycle.State, initialization.NextSequence);
@@ -52,19 +55,23 @@ public sealed class ManualPauseController : IAsyncDisposable {
         DateTimeOffset observedAt,
         CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);
-        await commandGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await commandGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
             if(!initialized)
                 throw new InvalidOperationException("The manual pause controller must be initialized first.");
             TrackerLifecycleState targetState = paused ? TrackerLifecycleState.Paused : TrackerLifecycleState.Running;
             if(lifecycle.State == targetState)
                 return new TrackerLifecycleTransition(lifecycle.State, lifecycle.State);
-            TrackingControlActivityEvent? activityEvent = await eventSession.SetManualPauseAsync(paused, observedAt, cancellationToken).ConfigureAwait(false);
+            TrackingControlActivityEvent? activityEvent = await eventSession.SetManualPauseAsync(paused, observedAt, cancellationToken)
+                .ConfigureAwait(false);
             TrackerLifecycleTransition transition = paused ? lifecycle.Pause() : lifecycle.Resume();
             if(activityEvent is null)
                 throw new InvalidOperationException("Persisted manual pause state diverged from the runtime lifecycle state.");
-            await eventWriter.AppendAsync(activityEvent, cancellationToken).ConfigureAwait(false);
-            await eventWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
+            await eventWriter.AppendAsync(activityEvent, cancellationToken)
+                .ConfigureAwait(false);
+            await eventWriter.FlushAsync(cancellationToken)
+                .ConfigureAwait(false);
             return transition;
         }
         finally { commandGate.Release(); }

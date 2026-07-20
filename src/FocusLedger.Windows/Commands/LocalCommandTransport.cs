@@ -77,7 +77,7 @@ public sealed class LocalCommandServer {
                 .ConfigureAwait(false);
     }
     static bool TryParseCommand(string? value, out LocalCommandKind command) {
-        command = value switch {
+        LocalCommandKind? parsed = value switch {
             "status" => LocalCommandKind.Status,
             "pause" => LocalCommandKind.Pause,
             "resume" => LocalCommandKind.Resume,
@@ -86,10 +86,10 @@ public sealed class LocalCommandServer {
             "open-configuration" => LocalCommandKind.OpenConfiguration,
             "open-data-folder" => LocalCommandKind.OpenDataFolder,
             "quit" => LocalCommandKind.Quit,
-            _ => default
+            _ => null
         };
-        return value is "status" or "pause" or "resume" or "enable-startup" or "disable-startup"
-            or "open-configuration" or "open-data-folder" or "quit";
+        command = parsed ?? default;
+        return parsed is not null;
     }
     internal static async ValueTask<byte[]> ReadBoundedPayloadAsync(Stream stream, CancellationToken cancellationToken) {
         byte[] lengthBytes = new byte[sizeof(int)];
@@ -143,27 +143,28 @@ public sealed class LocalCommandClient {
         TimeSpan timeout,
         CancellationToken cancellationToken) {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeout, TimeSpan.Zero);
-        using CancellationTokenSource timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeoutSource.CancelAfter(timeout);
-        using(NamedPipeClientStream pipe = new(
-            ".",
-            pipeName,
-            PipeDirection.InOut,
-            PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly)) {
-            await pipe.ConnectAsync(timeoutSource.Token)
-                .ConfigureAwait(false);
-            LocalCommandRequest request = new(1, GetCommandName(command));
-            byte[] requestBytes = JsonSerializer.SerializeToUtf8Bytes(request, LocalCommandJsonContext.Default.LocalCommandRequest);
-            await LocalCommandServer.WriteBoundedPayloadAsync(pipe, requestBytes, timeoutSource.Token)
-                .ConfigureAwait(false);
-            await pipe.FlushAsync(timeoutSource.Token)
-                .ConfigureAwait(false);
-            byte[] responseBytes = await LocalCommandServer.ReadBoundedPayloadAsync(pipe, timeoutSource.Token)
-                .ConfigureAwait(false);
-            LocalCommandResponse? response = JsonSerializer.Deserialize(responseBytes, LocalCommandJsonContext.Default.LocalCommandResponse);
-            if(response is null || response.SchemaVersion != 1)
-                throw new InvalidDataException("The primary process returned an invalid acknowledgement.");
-            return new LocalCommandResult(response.Accepted, response.Status);
+        using(CancellationTokenSource timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)) {
+            timeoutSource.CancelAfter(timeout);
+            using(NamedPipeClientStream pipe = new(
+                ".",
+                pipeName,
+                PipeDirection.InOut,
+                PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly)) {
+                await pipe.ConnectAsync(timeoutSource.Token)
+                    .ConfigureAwait(false);
+                LocalCommandRequest request = new(1, GetCommandName(command));
+                byte[] requestBytes = JsonSerializer.SerializeToUtf8Bytes(request, LocalCommandJsonContext.Default.LocalCommandRequest);
+                await LocalCommandServer.WriteBoundedPayloadAsync(pipe, requestBytes, timeoutSource.Token)
+                    .ConfigureAwait(false);
+                await pipe.FlushAsync(timeoutSource.Token)
+                    .ConfigureAwait(false);
+                byte[] responseBytes = await LocalCommandServer.ReadBoundedPayloadAsync(pipe, timeoutSource.Token)
+                    .ConfigureAwait(false);
+                LocalCommandResponse? response = JsonSerializer.Deserialize(responseBytes, LocalCommandJsonContext.Default.LocalCommandResponse);
+                if(response is null || response.SchemaVersion != 1)
+                    throw new InvalidDataException("The primary process returned an invalid acknowledgement.");
+                return new LocalCommandResult(response.Accepted, response.Status);
+            }
         }
     }
     static string GetCommandName(LocalCommandKind command) {

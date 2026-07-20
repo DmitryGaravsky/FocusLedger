@@ -40,6 +40,8 @@ public sealed class ConfigurationManager : IConfigurationSnapshotProvider<FocusL
         ArgumentNullException.ThrowIfNull(timeProvider);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(debounceInterval, TimeSpan.Zero);
         this.configurationPath = Path.GetFullPath(configurationPath);
+        if(Path.GetDirectoryName(this.configurationPath) is null)
+            throw new ArgumentException("Configuration path must not be a root path.", nameof(configurationPath));
         temporaryPath = $"{this.configurationPath}.tmp";
         this.validator = validator;
         this.timeProvider = timeProvider;

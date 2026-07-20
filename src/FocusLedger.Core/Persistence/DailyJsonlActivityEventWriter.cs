@@ -34,10 +34,12 @@ public sealed class DailyJsonlActivityEventWriter : IActivityEventWriter {
         if(disposed)
             return;
         disposed = true;
-        await writerGate.WaitAsync().ConfigureAwait(false);
+        await writerGate.WaitAsync()
+            .ConfigureAwait(false);
         try {
             if(currentWriter is not null)
-                await currentWriter.DisposeAsync().ConfigureAwait(false);
+                await currentWriter.DisposeAsync()
+                    .ConfigureAwait(false);
             currentWriter = null;
         }
         finally {
@@ -51,20 +53,24 @@ public sealed class DailyJsonlActivityEventWriter : IActivityEventWriter {
     public async ValueTask AppendAsync(ActivityEvent activityEvent, CancellationToken cancellationToken) {
         ArgumentNullException.ThrowIfNull(activityEvent);
         ObjectDisposedException.ThrowIf(disposed, this);
-        await writerGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await writerGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
             ObjectDisposedException.ThrowIf(disposed, this);
-            await AppendOrderedAsync(activityEvent, cancellationToken).ConfigureAwait(false);
+            await AppendOrderedAsync(activityEvent, cancellationToken)
+                .ConfigureAwait(false);
         }
         finally { writerGate.Release(); }
     }
     public async ValueTask FlushAsync(CancellationToken cancellationToken) {
         ObjectDisposedException.ThrowIf(disposed, this);
-        await writerGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await writerGate.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
         try {
             ObjectDisposedException.ThrowIf(disposed, this);
             if(currentWriter is not null)
-                await currentWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
+                await currentWriter.FlushAsync(cancellationToken)
+                    .ConfigureAwait(false);
         }
         finally { writerGate.Release(); }
     }
@@ -72,26 +78,31 @@ public sealed class DailyJsonlActivityEventWriter : IActivityEventWriter {
         string eventType = activityEvent.Envelope.Type;
         DateOnly eventDate = ResolveLocalDate(activityEvent.Envelope);
         if(currentWriter is null && OpenInitialWriter(eventDate, eventType)) {
-            await currentWriter!.AppendAsync(activityEvent, cancellationToken).ConfigureAwait(false);
+            await currentWriter!.AppendAsync(activityEvent, cancellationToken)
+                .ConfigureAwait(false);
             return;
         }
         if(state == DailyWriterState.AwaitingDayStarted) {
             if(eventType != "day.started")
                 throw new InvalidOperationException("A completed daily file must be followed by day.started.");
-            await RotateAsync(eventDate).ConfigureAwait(false);
-            await currentWriter!.AppendAsync(activityEvent, cancellationToken).ConfigureAwait(false);
+            await RotateAsync(eventDate)
+                .ConfigureAwait(false);
+            await currentWriter!.AppendAsync(activityEvent, cancellationToken)
+                .ConfigureAwait(false);
             state = DailyWriterState.AwaitingStateSnapshot;
             return;
         }
         if(state == DailyWriterState.AwaitingStateSnapshot) {
             if(eventType != "state.snapshot")
                 throw new InvalidOperationException("A new daily file must begin with state.snapshot after day.started.");
-            await currentWriter!.AppendAsync(activityEvent, cancellationToken).ConfigureAwait(false);
+            await currentWriter!.AppendAsync(activityEvent, cancellationToken)
+                .ConfigureAwait(false);
             state = DailyWriterState.Ready;
             return;
         }
         if(eventType == "day.ended") {
-            await currentWriter!.AppendAsync(activityEvent, cancellationToken).ConfigureAwait(false);
+            await currentWriter!.AppendAsync(activityEvent, cancellationToken)
+                .ConfigureAwait(false);
             state = DailyWriterState.AwaitingDayStarted;
             return;
         }
@@ -99,7 +110,8 @@ public sealed class DailyJsonlActivityEventWriter : IActivityEventWriter {
             throw new InvalidOperationException("day.started is valid only while opening a new daily file.");
         if(eventDate != currentDate)
             throw new InvalidOperationException("A local-date transition requires day.ended, day.started, and state.snapshot events.");
-        await currentWriter!.AppendAsync(activityEvent, cancellationToken).ConfigureAwait(false);
+        await currentWriter!.AppendAsync(activityEvent, cancellationToken)
+            .ConfigureAwait(false);
     }
     bool OpenInitialWriter(DateOnly eventDate, string eventType) {
         string filePath = GetFilePath(eventDate);
@@ -116,16 +128,14 @@ public sealed class DailyJsonlActivityEventWriter : IActivityEventWriter {
     async ValueTask RotateAsync(DateOnly eventDate) {
         if(currentDate is not null && eventDate <= currentDate)
             throw new InvalidOperationException("Daily rollover must advance to a later local date.");
-        await currentWriter!.DisposeAsync().ConfigureAwait(false);
+        await currentWriter!.DisposeAsync()
+            .ConfigureAwait(false);
         currentWriter = new JsonlActivityEventWriter(GetFilePath(eventDate), flushInterval, timeProvider);
         currentDate = eventDate;
         Interlocked.Increment(ref rolloverCount);
     }
     string GetFilePath(DateOnly date) {
-        return Path.Combine(
-            dataRootPath,
-            date.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture),
-            $"activity-{date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}.jsonl");
+        return ActivityFileNaming.GetFilePath(dataRootPath, date);
     }
     static DateOnly ResolveLocalDate(EventEnvelope envelope) {
         TimeSpan offset = TimeSpan.FromMinutes(envelope.UtcOffsetMinutes);

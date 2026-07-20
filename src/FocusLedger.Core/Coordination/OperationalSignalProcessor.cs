@@ -19,7 +19,8 @@ public sealed class OperationalSignalProcessor : IActivitySignalProcessor {
         ArgumentNullException.ThrowIfNull(runtimeState);
         if(signal is not OperationalActivitySignal operationalSignal)
             throw new ArgumentException("The operational processor accepts only operational signals.", nameof(signal));
-        OperationalActivityEvent activityEvent = await eventSession.CreateEventAsync(operationalSignal, cancellationToken).ConfigureAwait(false);
+        OperationalActivityEvent activityEvent = await eventSession.CreateEventAsync(operationalSignal, cancellationToken)
+            .ConfigureAwait(false);
         return new ActivityEvent[] { activityEvent };
     }
 }

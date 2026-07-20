@@ -60,8 +60,7 @@ sealed class WindowsLocalShell : ILocalShell {
             UseShellExecute = true
         };
         using(Process? process = Process.Start(startInfo)) {
-            if(process is null)
-                throw new InvalidOperationException("Windows did not start the requested shell operation.");
+            // Shell activation may succeed without returning a process object; dispose one only when supplied.
         }
     }
 }
