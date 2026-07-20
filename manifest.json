@@ -56,8 +56,8 @@
   },
   {
     "path": "docs/data/configuration.md",
-    "bytes": 13056,
-    "sha256": "208d42fd2895638c0ba3ee9d218fa68558bbe5db856d5c0d15a551a8a35a81aa"
+    "bytes": 13417,
+    "sha256": "dcda45ab7d54aa39067c0d9aeead937c03c271c4ed3587943b4b9765e685ace0"
   },
   {
     "path": "docs/data/event-model.md",
@@ -106,8 +106,8 @@
   },
   {
     "path": "docs/roadmap.md",
-    "bytes": 18440,
-    "sha256": "eacb085d66141c6de6d0d12b292ad0e9619b7f2055a5d42123350144d02d0643"
+    "bytes": 18441,
+    "sha256": "b81a2ebc5830d856e5bc5d8f6a3683ea3374b4392317eb0f0cbcedf1048ea0b6"
   },
   {
     "path": "README.md",

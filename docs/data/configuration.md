@@ -181,6 +181,8 @@ Validation failures include:
 
 Validation errors are reported using JSON paths and safe fixed messages. The offending raw value is not copied into diagnostics when it may contain personal data.
 
+`ConfigurationValidator` returns at most 256 immutable errors. Each error contains only a JSON path, an enumerated code, and a fixed message. Validation covers schema support, identifiers, references, privacy switches, regular expressions, numeric ranges, working schedules, process names, safe contexts, meeting thresholds, and diagnostic privacy settings.
+
 ## 5. Hot reload
 
 - Watch the file with `FileSystemWatcher`.
