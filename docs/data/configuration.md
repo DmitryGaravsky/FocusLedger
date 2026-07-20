@@ -210,3 +210,5 @@ Configuration schema changes require explicit migrations. The application must n
 `tests/FocusLedger.Core.Tests/Fixtures/Compatibility/schema-1-configuration-names.json` freezes the schema 1 section and property names. It is a compact naming fixture rather than the complete built-in default configuration. The complete default remains normative in section 3 and will be covered by serialization fixtures when `CFG-001` is implemented.
 
 Renaming or removing a schema 1 property requires a schema-version increment and documented migration. Backward-compatible optional additions do not require a version increment, but readers must continue to accept this fixture.
+
+The implementation represents collection-valued sections with `ImmutableArray<T>` and exposes the complete built-in baseline through `BuiltInConfiguration.CreateDefault()`. Serialization and loading use the source-generated `ConfigurationJsonContext`; reflection-based serialization is not part of the configuration boundary.

@@ -82,7 +82,7 @@ The user can operate the application entirely through the tray or CLI, run one i
 | OPS-002 | Implement persisted manual pause | Complete | CORE-001, DATA-004, UX-002 | Pause survives restart and attribution remains stopped until explicit resume. |
 | OPS-003 | Implement per-user single instance | Complete | WIN-001 | Second interactive launch does not create another collector. |
 | OPS-004 | Implement same-user named-pipe commands | Complete | OPS-003 | CLI commands are validated, bounded, ACL-restricted, and acknowledged. |
-| CFG-001 | Implement configuration model and defaults | Planned | FND-006 | Complete documented default config can be serialized and loaded. |
+| CFG-001 | Implement configuration model and defaults | Complete | FND-006 | Complete documented default config can be serialized and loaded. |
 | CFG-002 | Implement configuration validation | Planned | CFG-001 | Duplicate IDs, invalid references, unsafe privacy settings, regex errors, and invalid ranges are rejected safely. |
 | CFG-003 | Implement atomic hot reload | Planned | CFG-002 | Valid config replaces snapshot; invalid config leaves previous snapshot active and signals an error. |
 | WIN-008 | Implement per-user autostart | Planned | UX-002 | Explicit command creates/removes HKCU Run entry and detects moved executable path. |
